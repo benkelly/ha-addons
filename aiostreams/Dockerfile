@@ -6,6 +6,7 @@ FROM ghcr.io/jqlang/jq:1.8.1 AS jq
 FROM ghcr.io/viren070/aiostreams:v2.33.2
 
 COPY --from=jq /jq /usr/local/bin/jq
+COPY ensure-secret-key.js /ensure-secret-key.js
 COPY run.sh /run.sh
 
 # The upstream base has no chmod, so run.sh is invoked through the shell

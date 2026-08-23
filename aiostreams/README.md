@@ -14,11 +14,12 @@ See [DOCS.md](./DOCS.md) for setup and the full option reference.
 ## Quick start
 
 1. Install the add-on and open the **Configuration** tab.
-2. Set `SECRET_KEY` to a 64 character hex string
-   (`openssl rand -hex 32`). The add-on refuses to start without it.
-3. Set `BASE_URL` to the address you reach the add-on on, for example
+2. Set `BASE_URL` to the address you reach the add-on on, for example
    `http://homeassistant.local:3000`.
-4. Start the add-on and click **Open Web UI**.
+3. Start the add-on and click **Open Web UI**.
+
+`SECRET_KEY` is generated on the first start and written back to the add-on
+options, so you only need to set it if you would rather supply your own.
 
 Everything else is configured from the AIOStreams dashboard itself.
 

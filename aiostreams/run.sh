@@ -40,9 +40,10 @@ fi
 
 # --- Required ---------------------------------------------------------------
 
-SECRET_KEY=$(opt SECRET_KEY)
+# Returns the configured key, or generates and stores one when it is blank.
+SECRET_KEY=$(/nodejs/bin/node /ensure-secret-key.js)
 if [ -z "$SECRET_KEY" ]; then
-    log "FATAL: SECRET_KEY is not set."
+    log "FATAL: SECRET_KEY is not set and one could not be generated."
     log "Generate one with: openssl rand -hex 32"
     log "Then set it in the add-on Configuration tab and restart."
     exit 1
