@@ -1,0 +1,36 @@
+---
+name: AIOStreams
+version: "2.33.2"
+slug: aiostreams
+description: >-
+  Consolidate multiple Stremio addons and debrid services into a single,
+  customisable super-addon.
+url: https://github.com/benkelly/ha-addons/tree/main/aiostreams
+arch:
+  - aarch64
+  - amd64
+init: false
+startup: services
+boot: auto
+ports:
+  3000/tcp: 3000
+ports_description:
+  3000/tcp: AIOStreams web interface
+webui: "http://[HOST]:[PORT:3000]"
+options:
+  SECRET_KEY: ""
+  BASE_URL: ""
+  LOG_LEVEL: info
+  LOG_FORMAT: text
+  SYSTEM_LIFECYCLE_ENABLED: false
+schema:
+  SECRET_KEY: password
+  BASE_URL: str?
+  ADDON_NAME: str?
+  DATABASE_URI: str?
+  AIOSTREAMS_AUTH: password?
+  AIOSTREAMS_AUTH_PERMISSIONS: str?
+  REDIS_URI: str?
+  LOG_LEVEL: list(error|warn|info|http|verbose|debug|silly)?
+  LOG_FORMAT: list(text|json)?
+  SYSTEM_LIFECYCLE_ENABLED: bool?
