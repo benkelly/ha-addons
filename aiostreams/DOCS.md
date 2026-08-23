@@ -6,18 +6,14 @@ an exact upstream release tag.
 ## Setup
 
 1. Add this repository to Home Assistant, then install **AIOStreams**.
-2. Generate an encryption secret:
+2. Open the **Configuration** tab and set `BASE_URL` to the address you actually
+   reach the add-on on, including the scheme and port, for example
+   `http://homeassistant.local:3000`, or `https://aiostreams.example.com` if you
+   put it behind a reverse proxy.
+3. Start the add-on and open the web UI on port `3000`.
 
-   ```
-   openssl rand -hex 32
-   ```
-
-3. Open the **Configuration** tab and set `SECRET_KEY` to that value.
-   The add-on will not start without it.
-4. Set `BASE_URL` to the address you actually reach the add-on on, including
-   the scheme and port, for example `http://homeassistant.local:3000` or
-   `https://aiostreams.example.com` if you put it behind a reverse proxy.
-5. Start the add-on and open the web UI on port `3000`.
+`SECRET_KEY` is generated for you on the first start, so you only need to touch
+it if you want to supply your own.
 
 Only the options below are set through Home Assistant. Everything else, such as
 presets, debrid credentials, proxying, caching and rate limits, is a runtime
@@ -25,13 +21,23 @@ setting configured from the AIOStreams dashboard and stored in the database.
 
 ## Options
 
-### `SECRET_KEY` (required)
+### `SECRET_KEY`
 
-Secret used to encrypt stored addon configurations. Must be a 64 character hex
-string. Generate one with `openssl rand -hex 32`.
+Secret used to encrypt stored addon configurations. A 64 character hex string.
 
-Do not change this after the first run. Changing it makes every configuration
-already stored in the database undecryptable.
+**You can leave this blank.** On the first start the add-on generates a key,
+saves it to the add-on options through the Supervisor, and uses it. It then
+appears in this Configuration tab like any other setting, so there is nothing
+to do unless you want to supply your own. To do that, generate one with
+`openssl rand -hex 32` and paste it in before the first start.
+
+A copy is also kept in `/data/secret_key`. That copy is what gets reused if the
+add-on cannot reach the Supervisor, so the add-on still starts and keeps
+working either way.
+
+Do not change the key once the add-on has run. Changing it makes every
+configuration already stored in the database undecryptable. The add-on logs a
+warning if it spots the key has changed from the one it generated.
 
 ### `BASE_URL`
 
@@ -98,6 +104,7 @@ updates:
 - `/data/cache`, the disk backed caches for usenet segments, NZBs and torrent
   metadata
 - `/data/options.json`, the add-on options written by the Supervisor
+- `/data/secret_key`, the fallback copy of a generated `SECRET_KEY`
 
 The add-on sets `DATABASE_URI` and `DISK_CACHE_DIR` for you, so nothing is
 written to the container filesystem. Uninstalling the add-on removes `/data`,
@@ -121,8 +128,9 @@ the usual way.
 
 ## Troubleshooting
 
-**The add-on stops straight away.** Check the log. A missing or malformed
-`SECRET_KEY` is the usual cause and is reported explicitly.
+**The add-on stops straight away.** Check the log. A malformed `SECRET_KEY`
+that you set yourself is the usual cause and is reported explicitly. A blank
+one is not a problem, it gets generated.
 
 **Install URLs point at the wrong host.** `BASE_URL` is wrong. Set it to the
 address your Stremio clients use and restart.

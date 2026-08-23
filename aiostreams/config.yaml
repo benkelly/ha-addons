@@ -1,6 +1,6 @@
 ---
 name: AIOStreams
-version: "2.33.2"
+version: "2.33.2-1"
 slug: aiostreams
 description: >-
   Consolidate multiple Stremio addons and debrid services into a single,
@@ -10,6 +10,8 @@ arch:
   - aarch64
   - amd64
 init: false
+# Needed so a generated SECRET_KEY can be written back to the add-on options.
+hassio_api: true
 startup: services
 boot: auto
 ports:
