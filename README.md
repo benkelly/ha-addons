@@ -1,4 +1,4 @@
-# Ben Kelly's Home Assistant Add-ons
+# benkelly's Home Assistant Add-ons
 
 A small Home Assistant add-on repository.
 
