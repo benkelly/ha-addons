@@ -1,0 +1,121 @@
+---
+name: Update AIOStreams
+
+# Checks daily for a new upstream AIOStreams release and, if there is one,
+# opens a pull request bumping the pinned image tag, the add-on version and the
+# changelog. Nothing is merged automatically: every bump is reviewed by hand.
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    name: Check for a new upstream release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Resolve the latest upstream release
+        id: upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          gh api repos/Viren070/AIOStreams/releases/latest \
+            > "${RUNNER_TEMP}/release.json"
+
+          latest="$(jq -r '.tag_name' "${RUNNER_TEMP}/release.json")"
+          current="$(sed -n \
+            's#^FROM ghcr\.io/viren070/aiostreams:\(.*\)$#\1#p' \
+            aiostreams/Dockerfile)"
+
+          if [ -z "${latest}" ] || [ "${latest}" = "null" ]; then
+            echo "Could not resolve the latest upstream tag." >&2
+            exit 1
+          fi
+          if [ -z "${current}" ]; then
+            echo "Could not find the pinned tag in aiostreams/Dockerfile." >&2
+            exit 1
+          fi
+
+          echo "Pinned: ${current}"
+          echo "Latest: ${latest}"
+
+          {
+            echo "latest=${latest}"
+            echo "current=${current}"
+            echo "version=${latest#v}"
+          } >> "${GITHUB_OUTPUT}"
+
+          if [ "${latest}" != "${current}" ]; then
+            echo "changed=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "changed=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Apply the update
+        if: steps.upstream.outputs.changed == 'true'
+        env:
+          LATEST: ${{ steps.upstream.outputs.latest }}
+          CURRENT: ${{ steps.upstream.outputs.current }}
+          VERSION: ${{ steps.upstream.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          # Pin the new upstream tag, never latest.
+          sed -i \
+            "s#^FROM ghcr\.io/viren070/aiostreams:.*#FROM ghcr.io/viren070/aiostreams:${LATEST}#" \
+            aiostreams/Dockerfile
+
+          # Keep the add-on version in the same format as the original: the
+          # upstream tag with the leading v stripped.
+          sed -i "s#^version: .*#version: \"${VERSION}\"#" aiostreams/config.yaml
+
+          # Prepend a changelog entry, newest first.
+          {
+            printf '# Changelog\n\n'
+            printf '## %s\n\n' "${VERSION}"
+            printf -- '- Update AIOStreams to [%s](https://github.com/Viren070/AIOStreams/releases/tag/%s).\n\n' \
+              "${LATEST}" "${LATEST}"
+            tail -n +2 aiostreams/CHANGELOG.md | sed '/./,$!d'
+          } > "${RUNNER_TEMP}/CHANGELOG.md"
+          mv "${RUNNER_TEMP}/CHANGELOG.md" aiostreams/CHANGELOG.md
+
+          # Build the pull request body, including the upstream release notes.
+          {
+            printf 'Updates AIOStreams from `%s` to `%s`.\n\n' \
+              "${CURRENT}" "${LATEST}"
+            printf 'Upstream release: https://github.com/Viren070/AIOStreams/releases/tag/%s\n\n' \
+              "${LATEST}"
+            printf '## Upstream release notes\n\n'
+            jq -r '.body // "_No release notes provided._"' \
+              "${RUNNER_TEMP}/release.json"
+          } > "${RUNNER_TEMP}/pr-body.md"
+
+          git --no-pager diff --stat
+
+      - name: Open a pull request
+        if: steps.upstream.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: update/aiostreams-${{ steps.upstream.outputs.latest }}
+          delete-branch: true
+          add-paths: |
+            aiostreams/Dockerfile
+            aiostreams/config.yaml
+            aiostreams/CHANGELOG.md
+          commit-message: >-
+            Update AIOStreams to ${{ steps.upstream.outputs.latest }}
+          title: >-
+            Update AIOStreams to ${{ steps.upstream.outputs.latest }}
+          body-path: ${{ runner.temp }}/pr-body.md
+          labels: upstream-update
