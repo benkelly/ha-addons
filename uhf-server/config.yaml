@@ -9,14 +9,11 @@ url: https://github.com/benkelly/ha-addons/tree/main/uhf-server
 arch:
   - aarch64
   - amd64
-init: true
 startup: services
-boot: auto
 ports:
   8000/tcp: 8000
 ports_description:
   8000/tcp: UHF Server API, used by the UHF app
-watchdog: "http://[HOST]:[PORT:8000]/server/stats"
 map:
   - media:rw
 options:

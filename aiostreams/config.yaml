@@ -13,7 +13,6 @@ init: false
 # Needed so a generated SECRET_KEY can be written back to the add-on options.
 hassio_api: true
 startup: services
-boot: auto
 ports:
   3000/tcp: 3000
 ports_description:
