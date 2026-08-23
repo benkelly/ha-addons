@@ -1,8 +1,8 @@
 ---
-name: Update AIOStreams
+name: Update add-ons
 
-# Checks daily for a new upstream AIOStreams release and, if there is one,
-# opens a pull request bumping the pinned image tag, the add-on version and the
+# Checks daily for new upstream releases and, for each add-on with one, opens a
+# pull request bumping the pinned image tag, the add-on version and the
 # changelog. Nothing is merged automatically: every bump is reviewed by hand.
 
 on:
@@ -16,8 +16,20 @@ permissions:
 
 jobs:
   update:
-    name: Check for a new upstream release
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - addon: aiostreams
+            name: AIOStreams
+            upstream: Viren070/AIOStreams
+            image: ghcr.io/viren070/aiostreams
+          - addon: uhf-server
+            name: UHF Server
+            upstream: swapplications/uhf-server-dist
+            image: docker.io/swapplications/uhf-server
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
@@ -26,44 +38,76 @@ jobs:
         id: upstream
         env:
           GH_TOKEN: ${{ github.token }}
+          UPSTREAM: ${{ matrix.upstream }}
+          IMAGE: ${{ matrix.image }}
+          ADDON: ${{ matrix.addon }}
         run: |
           set -euo pipefail
 
-          gh api repos/Viren070/AIOStreams/releases/latest \
-            > "${RUNNER_TEMP}/release.json"
+          # Prefer the latest published release. Not every upstream publishes
+          # releases, so fall back to the highest semver tag.
+          if gh api "repos/${UPSTREAM}/releases/latest" \
+              > "${RUNNER_TEMP}/release.json" 2>/dev/null; then
+            latest="$(jq -r '.tag_name' "${RUNNER_TEMP}/release.json")"
+            jq -r '.body // ""' "${RUNNER_TEMP}/release.json" \
+              > "${RUNNER_TEMP}/notes.md"
+          else
+            echo "No published release for ${UPSTREAM}, falling back to tags."
+            gh api "repos/${UPSTREAM}/tags" --paginate --jq '.[].name' \
+              > "${RUNNER_TEMP}/tags.txt"
+            # Repositories can carry tags that are not version tags, so keep
+            # only strict semver before sorting.
+            latest="$(grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' \
+              "${RUNNER_TEMP}/tags.txt" \
+              | sed 's/^v//' | sort -V | tail -n1 || true)"
+            # Restore the v prefix if upstream uses one.
+            if grep -qx "v${latest}" "${RUNNER_TEMP}/tags.txt"; then
+              latest="v${latest}"
+            fi
+            : > "${RUNNER_TEMP}/notes.md"
+          fi
 
-          latest="$(jq -r '.tag_name' "${RUNNER_TEMP}/release.json")"
           current="$(sed -n \
-            's#^FROM ghcr\.io/viren070/aiostreams:\(.*\)$#\1#p' \
-            aiostreams/Dockerfile)"
+            "s#^FROM ${IMAGE}:\(.*\)\$#\1#p" \
+            "${ADDON}/Dockerfile")"
 
           if [ -z "${latest}" ] || [ "${latest}" = "null" ]; then
             echo "Could not resolve the latest upstream tag." >&2
             exit 1
           fi
           if [ -z "${current}" ]; then
-            echo "Could not find the pinned tag in aiostreams/Dockerfile." >&2
+            echo "Could not find the pinned tag in ${ADDON}/Dockerfile." >&2
             exit 1
           fi
 
           echo "Pinned: ${current}"
           echo "Latest: ${latest}"
 
+          changed=false
+          if [ "${latest}" != "${current}" ]; then
+            # The upstream repo can be tagged before the image is pushed. Only
+            # propose the bump once the image actually exists.
+            if docker manifest inspect "${IMAGE}:${latest}" > /dev/null 2>&1; then
+              changed=true
+            else
+              echo "::notice::${IMAGE}:${latest} is not published yet, skipping."
+            fi
+          fi
+
           {
             echo "latest=${latest}"
             echo "current=${current}"
             echo "version=${latest#v}"
+            echo "changed=${changed}"
           } >> "${GITHUB_OUTPUT}"
-
-          if [ "${latest}" != "${current}" ]; then
-            echo "changed=true" >> "${GITHUB_OUTPUT}"
-          else
-            echo "changed=false" >> "${GITHUB_OUTPUT}"
-          fi
 
       - name: Apply the update
         if: steps.upstream.outputs.changed == 'true'
         env:
+          UPSTREAM: ${{ matrix.upstream }}
+          IMAGE: ${{ matrix.image }}
+          ADDON: ${{ matrix.addon }}
+          NAME: ${{ matrix.name }}
           LATEST: ${{ steps.upstream.outputs.latest }}
           CURRENT: ${{ steps.upstream.outputs.current }}
           VERSION: ${{ steps.upstream.outputs.version }}
@@ -71,33 +115,37 @@ jobs:
           set -euo pipefail
 
           # Pin the new upstream tag, never latest.
-          sed -i \
-            "s#^FROM ghcr\.io/viren070/aiostreams:.*#FROM ghcr.io/viren070/aiostreams:${LATEST}#" \
-            aiostreams/Dockerfile
+          sed -i "s#^FROM ${IMAGE}:.*#FROM ${IMAGE}:${LATEST}#" \
+            "${ADDON}/Dockerfile"
 
           # Keep the add-on version in the same format as the original: the
-          # upstream tag with the leading v stripped.
-          sed -i "s#^version: .*#version: \"${VERSION}\"#" aiostreams/config.yaml
+          # upstream tag with any leading v stripped.
+          sed -i "s#^version: .*#version: \"${VERSION}\"#" \
+            "${ADDON}/config.yaml"
+
+          release_url="https://github.com/${UPSTREAM}/releases/tag/${LATEST}"
 
           # Prepend a changelog entry, newest first.
           {
             printf '# Changelog\n\n'
             printf '## %s\n\n' "${VERSION}"
-            printf -- '- Update AIOStreams to [%s](https://github.com/Viren070/AIOStreams/releases/tag/%s).\n\n' \
-              "${LATEST}" "${LATEST}"
-            tail -n +2 aiostreams/CHANGELOG.md | sed '/./,$!d'
+            printf -- '- Update %s to [%s](%s).\n\n' \
+              "${NAME}" "${LATEST}" "${release_url}"
+            tail -n +2 "${ADDON}/CHANGELOG.md" | sed '/./,$!d'
           } > "${RUNNER_TEMP}/CHANGELOG.md"
-          mv "${RUNNER_TEMP}/CHANGELOG.md" aiostreams/CHANGELOG.md
+          mv "${RUNNER_TEMP}/CHANGELOG.md" "${ADDON}/CHANGELOG.md"
 
           # Build the pull request body, including the upstream release notes.
           {
-            printf 'Updates AIOStreams from `%s` to `%s`.\n\n' \
-              "${CURRENT}" "${LATEST}"
-            printf 'Upstream release: https://github.com/Viren070/AIOStreams/releases/tag/%s\n\n' \
-              "${LATEST}"
+            printf 'Updates %s from `%s` to `%s`.\n\n' \
+              "${NAME}" "${CURRENT}" "${LATEST}"
+            printf 'Upstream release: %s\n\n' "${release_url}"
             printf '## Upstream release notes\n\n'
-            jq -r '.body // "_No release notes provided._"' \
-              "${RUNNER_TEMP}/release.json"
+            if [ -s "${RUNNER_TEMP}/notes.md" ]; then
+              cat "${RUNNER_TEMP}/notes.md"
+            else
+              printf '_No release notes published upstream._\n'
+            fi
           } > "${RUNNER_TEMP}/pr-body.md"
 
           git --no-pager diff --stat
@@ -107,15 +155,15 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: update/aiostreams-${{ steps.upstream.outputs.latest }}
+          branch: update/${{ matrix.addon }}-${{ steps.upstream.outputs.latest }}
           delete-branch: true
           add-paths: |
-            aiostreams/Dockerfile
-            aiostreams/config.yaml
-            aiostreams/CHANGELOG.md
+            ${{ matrix.addon }}/Dockerfile
+            ${{ matrix.addon }}/config.yaml
+            ${{ matrix.addon }}/CHANGELOG.md
           commit-message: >-
-            Update AIOStreams to ${{ steps.upstream.outputs.latest }}
+            Update ${{ matrix.name }} to ${{ steps.upstream.outputs.latest }}
           title: >-
-            Update AIOStreams to ${{ steps.upstream.outputs.latest }}
+            Update ${{ matrix.name }} to ${{ steps.upstream.outputs.latest }}
           body-path: ${{ runner.temp }}/pr-body.md
           labels: upstream-update
