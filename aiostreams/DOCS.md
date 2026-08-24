@@ -65,14 +65,31 @@ Overrides the database location. Leave blank to use the SQLite database in
 
 Operator credentials for this instance, as comma separated `username:password`
 pairs, for example `alice:hunter2,bob:swordfish`. Leave blank to leave the
-instance unprotected.
+instance unprotected. It is read at startup only, so restart the add-on after
+changing it.
+
+Each pair splits on its first colon, so a password may contain colons but not
+commas, and leading or trailing spaces are stripped. Both halves must be
+non-empty or the add-on refuses to start.
 
 ### `AIOSTREAMS_AUTH_PERMISSIONS`
 
-Per user permissions, as comma separated `username=perm1|perm2` entries. Valid
-permissions are `admin`, `proxy`, `service`, `sabnzbd` and `none`. Users not
-listed default to `admin`. Example:
-`alice=admin,bob=proxy|sabnzbd,carol=none`.
+Per user permissions, as comma separated `username=perm1|perm2` entries. Users
+you do not list keep full admin, so only list the ones you want to limit.
+
+Valid permissions are `admin`, `proxy`, `service`, `sabnzbd`, `createConfig`
+and `none`. `admin` implies all the others. `none` grants nothing and cannot be
+combined with anything else.
+
+Watch out for `createConfig`. Listing a user without it stops them creating new
+configurations, and it is easy to leave out because it was added after the
+other permissions. Include it unless you mean to withhold it:
+
+```
+alice=admin,bob=createConfig|proxy|sabnzbd,carol=none
+```
+
+The add-on logs a warning naming any user whose entry is missing it.
 
 ### `REDIS_URI`
 

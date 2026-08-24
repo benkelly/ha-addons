@@ -76,13 +76,15 @@ filesystem.
 Uninstalling the add-on removes `/data`, so back up `/data/db.json` first if
 you want to keep your scheduled recordings.
 
-## Networking and the watchdog
+## Networking and health checks
 
 The API is exposed on port `8000`. Change the host side of the mapping in the
 **Network** section if `8000` is taken.
 
-The add-on watchdog polls `/server/stats`. If the server stops responding, the
-Supervisor restarts the add-on.
+The container health check polls `/server/stats` every 30 seconds, after a 60
+second grace period at start. If the server stops responding the Supervisor
+restarts the add-on. It is a liveness check, so a password protected server
+answering `401` still counts as healthy.
 
 ## Updates
 
@@ -101,8 +103,8 @@ bridged add-on. Add the server by IP address and port.
 **Recordings are missing from the media browser.** Check `recordings_dir` is
 under `/media`. Home Assistant only indexes the media folder.
 
-**The add-on keeps restarting.** The watchdog restarts it when `/server/stats`
-stops answering. Check the log for the underlying error.
+**The add-on keeps restarting.** The health check restarts it when
+`/server/stats` stops answering. Check the log for the underlying error.
 
 **Commercial detection never finishes.** comskip is CPU bound and roughly real
 time on modest hardware. Turn `enable_commercial_detection` off if the host
