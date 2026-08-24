@@ -1,0 +1,27 @@
+---
+name: Remux
+version: "0.26.0"
+slug: remux
+description: >-
+  Jellyfin compatible media server bringing Stremio add-ons, local files and
+  WebDAV sources together under one roof.
+url: https://github.com/benkelly/ha-addons/tree/main/remux
+arch:
+  - aarch64
+  - amd64
+startup: services
+ports:
+  3000/tcp: 3000
+  6881/tcp: 6881
+ports_description:
+  3000/tcp: Web interface and Jellyfin compatible API
+  6881/tcp: Torrent peer connections, optional
+webui: "http://[HOST]:[PORT:3000]"
+map:
+  - media:rw
+options:
+  log_level: info
+  disable_dht: false
+schema:
+  log_level: list(error|warn|info|debug|trace)?
+  disable_dht: bool
