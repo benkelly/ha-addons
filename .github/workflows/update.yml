@@ -26,10 +26,19 @@ jobs:
             name: AIOStreams
             upstream: Viren070/AIOStreams
             image: ghcr.io/viren070/aiostreams
+            # Image tags match the git tags, v prefix included.
+            image_tag_style: same
           - addon: uhf-server
             name: UHF Server
             upstream: swapplications/uhf-server-dist
             image: docker.io/swapplications/uhf-server
+            image_tag_style: same
+          - addon: remux
+            name: Remux
+            upstream: lostb1t/remux
+            image: ghcr.io/lostb1t/remux
+            # Upstream tags v0.26.0 but publishes the image as 0.26.0.
+            image_tag_style: strip-v
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
@@ -41,6 +50,7 @@ jobs:
           UPSTREAM: ${{ matrix.upstream }}
           IMAGE: ${{ matrix.image }}
           ADDON: ${{ matrix.addon }}
+          IMAGE_TAG_STYLE: ${{ matrix.image_tag_style }}
         run: |
           set -euo pipefail
 
@@ -80,24 +90,38 @@ jobs:
             exit 1
           fi
 
-          echo "Pinned: ${current}"
-          echo "Latest: ${latest}"
+          version="${latest#v}"
 
+          # The registry tag is not always the git tag: some upstreams publish
+          # the version without the v prefix they tag with.
+          if [ "${IMAGE_TAG_STYLE}" = "strip-v" ]; then
+            image_tag="${version}"
+          else
+            image_tag="${latest}"
+          fi
+
+          echo "Pinned image tag: ${current}"
+          echo "Latest release:   ${latest}"
+          echo "Wanted image tag: ${image_tag}"
+
+          # current comes out of the Dockerfile, so it is an image tag and has
+          # to be compared against one.
           changed=false
-          if [ "${latest}" != "${current}" ]; then
+          if [ "${image_tag}" != "${current}" ]; then
             # The upstream repo can be tagged before the image is pushed. Only
             # propose the bump once the image actually exists.
-            if docker manifest inspect "${IMAGE}:${latest}" > /dev/null 2>&1; then
+            if docker manifest inspect "${IMAGE}:${image_tag}" > /dev/null 2>&1; then
               changed=true
             else
-              echo "::notice::${IMAGE}:${latest} is not published yet, skipping."
+              echo "::notice::${IMAGE}:${image_tag} is not published yet, skipping."
             fi
           fi
 
           {
             echo "latest=${latest}"
             echo "current=${current}"
-            echo "version=${latest#v}"
+            echo "version=${version}"
+            echo "image_tag=${image_tag}"
             echo "changed=${changed}"
           } >> "${GITHUB_OUTPUT}"
 
@@ -111,11 +135,12 @@ jobs:
           LATEST: ${{ steps.upstream.outputs.latest }}
           CURRENT: ${{ steps.upstream.outputs.current }}
           VERSION: ${{ steps.upstream.outputs.version }}
+          IMAGE_TAG: ${{ steps.upstream.outputs.image_tag }}
         run: |
           set -euo pipefail
 
-          # Pin the new upstream tag, never latest.
-          sed -i "s#^FROM ${IMAGE}:.*#FROM ${IMAGE}:${LATEST}#" \
+          # Pin the new image tag, never latest.
+          sed -i "s#^FROM ${IMAGE}:.*#FROM ${IMAGE}:${IMAGE_TAG}#" \
             "${ADDON}/Dockerfile"
 
           # Keep the add-on version in the same format as the original: the
@@ -138,7 +163,7 @@ jobs:
           # Build the pull request body, including the upstream release notes.
           {
             printf 'Updates %s from `%s` to `%s`.\n\n' \
-              "${NAME}" "${CURRENT}" "${LATEST}"
+              "${NAME}" "${CURRENT}" "${IMAGE_TAG}"
             printf 'Upstream release: %s\n\n' "${release_url}"
             printf '## Upstream release notes\n\n'
             if [ -s "${RUNNER_TEMP}/notes.md" ]; then
