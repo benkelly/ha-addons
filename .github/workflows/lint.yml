@@ -18,6 +18,7 @@ jobs:
       matrix:
         addon:
           - aiostreams
+          - dispatcharr
           - remux
           - tvheadend
           - uhf-server

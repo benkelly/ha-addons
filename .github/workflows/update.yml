@@ -33,6 +33,12 @@ jobs:
             upstream: swapplications/uhf-server-dist
             image: docker.io/swapplications/uhf-server
             image_tag_style: same
+          - addon: dispatcharr
+            name: Dispatcharr
+            upstream: Dispatcharr/Dispatcharr
+            image: ghcr.io/dispatcharr/dispatcharr
+            # Upstream tags v0.29.0 but publishes the image as 0.29.0.
+            image_tag_style: strip-v
           - addon: remux
             name: Remux
             upstream: lostb1t/remux
