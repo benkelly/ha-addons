@@ -28,3 +28,8 @@ Assistant media browser.
 
 This add-on has no web interface. UHF Server is an API only service consumed
 by the UHF app, so there is no **Open Web UI** button.
+
+## Branding assets
+
+`icon.png` and `logo.png` are downscaled from the UHF app's own published
+avatar. The upstream image itself ships no artwork.

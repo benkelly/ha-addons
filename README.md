@@ -35,8 +35,8 @@ https://github.com/benkelly/ha-addons
   [`swapplications/uhf-server`](https://github.com/swapplications/uhf-server-dist).
 - Version bumps are proposed by a scheduled workflow as pull requests, and are
   merged by hand so each upstream release gets reviewed.
-- The AIOStreams, Dispatcharr, Remux and Tvheadend icons and logos are derived
-  from their upstream logos (AIOStreams GPL-3.0, Dispatcharr AGPL-3.0, Remux
-  AGPL-3.0, Tvheadend GPL-3.0). UHF Server ships no branding assets, so that
-  add-on has none.
+- Add-on icons and logos are derived from each project's own artwork
+  (AIOStreams GPL-3.0, Dispatcharr AGPL-3.0, Remux AGPL-3.0, Tvheadend
+  GPL-3.0). The UHF Server image ships none, so that icon comes from the UHF
+  app's published avatar.
 - This repository carries no licence.
