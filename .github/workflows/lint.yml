@@ -19,6 +19,7 @@ jobs:
         addon:
           - aiostreams
           - remux
+          - tvheadend
           - uhf-server
     steps:
       - name: Check out the repository

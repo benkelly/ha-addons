@@ -192,3 +192,137 @@ jobs:
             Update ${{ matrix.name }} to ${{ steps.upstream.outputs.latest }}
           body-path: ${{ runner.temp }}/pr-body.md
           labels: upstream-update
+
+  # Add-ons pinned by digest rather than by tag, because their upstream
+  # publishes only rolling tags and has no releases to follow.
+  update-digest:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - addon: tvheadend
+            name: Tvheadend
+            upstream: tvheadend/tvheadend
+            image: ghcr.io/tvheadend/tvheadend
+            tag: master-debian
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Resolve the current image digest
+        id: upstream
+        env:
+          IMAGE: ${{ matrix.image }}
+          TAG: ${{ matrix.tag }}
+          ADDON: ${{ matrix.addon }}
+        run: |
+          set -euo pipefail
+
+          # The index digest, so the pin stays multi-arch.
+          digest="$(docker buildx imagetools inspect "${IMAGE}:${TAG}" \
+            --format '{{json .Manifest}}' | jq -r '.digest')"
+
+          current="$(sed -n \
+            "s#^FROM ${IMAGE}@\(sha256:[0-9a-f]\{64\}\)\$#\1#p" \
+            "${ADDON}/Dockerfile")"
+
+          if [ -z "${digest}" ] || [ "${digest}" = "null" ]; then
+            echo "Could not resolve the digest of ${IMAGE}:${TAG}." >&2
+            exit 1
+          fi
+          if [ -z "${current}" ]; then
+            echo "Could not find the pinned digest in ${ADDON}/Dockerfile." >&2
+            exit 1
+          fi
+
+          echo "Pinned:  ${current}"
+          echo "Current: ${digest}"
+
+          changed=false
+          if [ "${digest}" != "${current}" ]; then
+            changed=true
+          fi
+
+          # Git branch names cannot contain a colon, so the branch uses a
+          # short form of the digest rather than the full sha256: reference.
+          {
+            echo "digest=${digest}"
+            echo "current=${current}"
+            echo "short_digest=$(echo "${digest#sha256:}" | cut -c1-12)"
+            echo "changed=${changed}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Apply the update
+        if: steps.upstream.outputs.changed == 'true'
+        env:
+          UPSTREAM: ${{ matrix.upstream }}
+          IMAGE: ${{ matrix.image }}
+          ADDON: ${{ matrix.addon }}
+          NAME: ${{ matrix.name }}
+          TAG: ${{ matrix.tag }}
+          DIGEST: ${{ steps.upstream.outputs.digest }}
+          CURRENT: ${{ steps.upstream.outputs.current }}
+        run: |
+          set -euo pipefail
+
+          # Each digest pinned add-on ships a script that reports the version
+          # of a given image, since there is no release number to read.
+          version="$(IMAGE_REF="${IMAGE}@${DIGEST}" "./${ADDON}/upstream-version.sh")"
+          revision="$(docker inspect "${IMAGE}@${DIGEST}" \
+            --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')"
+          short="$(echo "${revision}" | cut -c1-12)"
+
+          echo "Version:  ${version}"
+          echo "Revision: ${short}"
+
+          sed -i "s#^FROM ${IMAGE}@sha256:[0-9a-f]*\$#FROM ${IMAGE}@${DIGEST}#" \
+            "${ADDON}/Dockerfile"
+          sed -i "s#^version: .*#version: \"${version}\"#" \
+            "${ADDON}/config.yaml"
+
+          commit_url="https://github.com/${UPSTREAM}/commit/${revision}"
+
+          # Prepend a changelog entry, newest first.
+          {
+            printf '# Changelog\n\n'
+            printf '## %s\n\n' "${version}"
+            printf -- '- Update %s to upstream commit [%s](%s).\n\n' \
+              "${NAME}" "${short}" "${commit_url}"
+            tail -n +2 "${ADDON}/CHANGELOG.md" | sed '/./,$!d'
+          } > "${RUNNER_TEMP}/CHANGELOG.md"
+          mv "${RUNNER_TEMP}/CHANGELOG.md" "${ADDON}/CHANGELOG.md"
+
+          {
+            printf 'Updates %s to the current `%s` image.\n\n' "${NAME}" "${TAG}"
+            printf '| | |\n| --- | --- |\n'
+            printf '| Version | `%s` |\n' "${version}"
+            printf '| Upstream commit | [`%s`](%s) |\n' "${short}" "${commit_url}"
+            printf '| Digest | `%s` |\n' "${DIGEST}"
+            printf '| Previous digest | `%s` |\n\n' "${CURRENT}"
+            printf '%s publishes no release tags, so the image is pinned by ' "${NAME}"
+            printf 'digest and the version comes from the binary itself.\n\n'
+            printf 'There are no upstream release notes to quote. Compare the '
+            printf 'commits before merging.\n'
+          } > "${RUNNER_TEMP}/pr-body.md"
+
+          git --no-pager diff --stat
+
+      - name: Open a pull request
+        if: steps.upstream.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: update/${{ matrix.addon }}-${{ steps.upstream.outputs.short_digest }}
+          delete-branch: true
+          add-paths: |
+            ${{ matrix.addon }}/Dockerfile
+            ${{ matrix.addon }}/config.yaml
+            ${{ matrix.addon }}/CHANGELOG.md
+          commit-message: >-
+            Update ${{ matrix.name }} to the current ${{ matrix.tag }} image
+          title: >-
+            Update ${{ matrix.name }} to the current ${{ matrix.tag }} image
+          body-path: ${{ runner.temp }}/pr-body.md
+          labels: upstream-update
