@@ -105,6 +105,13 @@ If you want hardware acceleration, the add-on needs a `devices` entry for your
 GPU. Raise it and it can be added, bearing in mind it lowers the add-on
 security rating.
 
+That is only worth doing if the host has a real GPU to hand over. Home
+Assistant running in a virtual machine usually sees a paravirtual display
+adapter such as a Virtio GPU, which provides a framebuffer but no video encode
+or decode engine, so VAAPI has nothing to bind to no matter what the add-on
+requests. On Apple Silicon hosts there is no VAAPI path to pass through at all.
+In either case the fix is at the hypervisor level, not here.
+
 ## Updates
 
 Updates are manual tag bumps. The Dockerfile pins an exact upstream tag, so a
@@ -133,3 +140,23 @@ the files and remove the directory so the symlink can be created.
 **Guide data is thin or wrong.** Dispatcharr matches guide data, it does not
 improve it. The quality comes from the source: Schedules Direct is the best
 option for UK and Ireland, with XMLTV grabbers as the free alternative.
+
+**The log warns about GPU devices being inaccessible.** Expected, and harmless.
+Upstream runs a hardware acceleration check at every start, and it reports
+lines such as:
+
+```
+⚠️ Device /dev/dri/renderD128 exists but is not accessible.
+⚠️ User dispatch cannot access /dev/dri/card0 (permission denied)
+⚠️ FFmpeg VAAPI acceleration: NOT DETECTED
+```
+
+The device nodes are visible because the Supervisor exposes part of `/dev` to
+add-ons, but this add-on does not request them, so opening them is denied. That
+is the deliberate choice described under hardware transcoding above. Dispatcharr
+starts normally and everything except hardware transcoding works.
+
+The check also prints the GPU it found. If that is a Virtio or other
+paravirtual adapter, see hardware transcoding above: passing the devices
+through would not help, because there is no video engine behind them. Look for
+`⏳ Dispatcharr is running` further down the log to confirm the add-on came up.
