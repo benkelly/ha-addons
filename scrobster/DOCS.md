@@ -137,6 +137,59 @@ inputs share one history and one duplicate filter.
 The browser microphone needs a secure context. It works through ingress,
 because Home Assistant serves that over your existing connection.
 
+## Use matches in Home Assistant
+
+The add-on serves a JSON status endpoint, so you can turn what it hears into a
+sensor and use it in automations.
+
+Ingress cannot be read by a sensor, so map a port first. Open the add-on
+**Network** setting, set the host port for `8000/tcp` to `8000`, and restart.
+
+Then add this to `configuration.yaml`:
+
+```yaml
+sensor:
+  - platform: rest
+    name: scrobSter
+    resource: http://homeassistant.local:8000/api/status
+    scan_interval: 30
+    value_template: >-
+      {{ value_json.last_match.artist ~ ' - ' ~ value_json.last_match.title
+         if value_json.last_match else 'nothing' }}
+    json_attributes:
+      - last_match
+      - listening
+      - level_db
+      - services
+```
+
+Use the IP address of your Home Assistant machine if `homeassistant.local`
+does not resolve. Set `api_token` to nothing while you do this, because the
+sensor sends no token.
+
+The attributes carry the detail. `last_match` holds the artist, title, album,
+cover art URL and the position inside the track. `level_db` is the input level,
+which is useful for an alert when the microphone goes silent:
+
+```yaml
+automation:
+  - alias: Warn when scrobSter hears nothing
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.scrobster
+        attribute: level_db
+        below: -80
+        for: "00:10:00"
+    action:
+      - service: notify.persistent_notification
+        data:
+          message: scrobSter input has been silent for ten minutes.
+```
+
+The sensor reports the last match, which stays after the song ends. Use the
+`last_match.ts` attribute, a unix timestamp, when you need to know how recent
+it is.
+
 ## Troubleshooting
 
 **Nothing is ever matched.** Read `input <n> dBFS` on the page.
