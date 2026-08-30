@@ -59,7 +59,7 @@ your password.
    docker run --rm \
      -e LASTFM_API_KEY=your-key \
      -e LASTFM_API_SECRET=your-secret \
-     ghcr.io/benkelly/scrobster:0.1.0 python -m scrobster.auth
+     ghcr.io/benkelly/scrobster:0.1.1 python -m scrobster.auth
    ```
 
 4. Open the URL it prints and choose **Yes, allow access**.

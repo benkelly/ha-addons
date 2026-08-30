@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+- Fix the add-on failing to start with `unable to open database file`. The
+  container ran as an unprivileged user, but Home Assistant provides `/data` as
+  a root-owned bind mount, so the database could not be created.
+
 ## 0.1.0
 
 - Initial release, wrapping scrobSter

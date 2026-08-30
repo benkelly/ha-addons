@@ -1,6 +1,6 @@
 ---
 name: scrobSter
-version: "0.1.0"
+version: "0.1.1"
 slug: scrobster
 description: >-
   Identify the music playing around you with Shazam and scrobble it to Last.fm,
