@@ -1,4 +1,4 @@
-FROM ghcr.io/dispatcharr/dispatcharr:0.29.0
+FROM ghcr.io/dispatcharr/dispatcharr:0.30.0
 
 # The upstream image is a LinuxServer style s6-overlay build and already
 # carries curl, so jq is the only thing needed to read the add-on options.
