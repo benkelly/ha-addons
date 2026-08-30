@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.2
+
+- Fix the add-on ignoring `audio_backend` and `audio_device`. The image pinned
+  both as environment variables, which outrank the add-on options, so the
+  microphone was always read through ALSA.
+- Add the ALSA to PulseAudio plugin, so `audio_backend: alsa` also works with
+  the sound routing that Home Assistant provides.
+
 ## 0.1.1
 
 - Fix the add-on failing to start with `unable to open database file`. The

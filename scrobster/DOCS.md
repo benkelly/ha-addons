@@ -59,7 +59,7 @@ your password.
    docker run --rm \
      -e LASTFM_API_KEY=your-key \
      -e LASTFM_API_SECRET=your-secret \
-     ghcr.io/benkelly/scrobster:0.1.1 python -m scrobster.auth
+     ghcr.io/benkelly/scrobster:0.1.2 python -m scrobster.auth
    ```
 
 4. Open the URL it prints and choose **Yes, allow access**.
@@ -122,8 +122,16 @@ so its copy disappears a few minutes later on its own.
 Optional. When set, the JSON API needs the header
 `Authorization: Bearer <token>`.
 
-Leave this empty if you use ingress. Home Assistant already authenticates you,
-and a token makes the built-in page ask for it again.
+Leave this empty while you reach the add-on only through ingress. Home
+Assistant already authenticates you, and a token makes the built-in page ask
+for it again.
+
+**Set it if you publish the add-on through a reverse proxy.** Without a token
+the API is open to anyone who reaches the address. `POST /api/match` accepts
+audio and scrobbles the result, so a stranger could write tracks into your
+listening history. `POST /api/listen` can also stop the add-on.
+
+The web page asks for the token once and keeps it in browser storage.
 
 ## The web page
 
