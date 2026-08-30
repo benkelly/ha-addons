@@ -32,7 +32,26 @@ Any input that Home Assistant lists works, including a USB microphone and a USB
 sound card with a line input. A line input from a radio or an amplifier gives
 the best results, because it avoids room noise altogether.
 
+## Accounts
+
+The first start creates one administrator. Set `admin_password` to choose its
+password. Without one, a random password is written to the add-on log once, so
+read the log and then change it under Settings.
+
+Through **Open Web UI** there is no sign-in, because Home Assistant has already
+signed you in and its rules say an add-on must not ask twice. A sign-in appears
+only when you reach the add-on another way, such as through a reverse proxy.
+
+An administrator adds more people under **Users**. Each person then connects
+their own services under **Settings**, and their history is their own.
+
+Only an administrator starts or stops the microphone.
+
 ## Connect a service
+
+You can set these options, which seed the first account on the first start.
+After that, manage services in the web page under **Settings**, because they
+belong to a user rather than to the add-on.
 
 Set at least one. You can set several, and every match goes to all of them.
 
@@ -48,24 +67,18 @@ Set `maloja_url` to your server, for example `http://192.168.1.10:42010`, and
 
 ### Last.fm
 
-Last.fm needs an API key and a one-time authorization. scrobSter never stores
-your password.
+Last.fm needs an API key, which identifies scrobSter itself and is shared by
+everybody on this add-on. Each person then authorizes their own account in the
+browser. scrobSter never stores your password.
 
 1. Create an API account at <https://www.last.fm/api/account/create>.
-2. Put the key in `lastfm_api_key` and the secret in `lastfm_api_secret`.
-3. On any computer with Docker, ask for the authorization URL:
+2. Put the key in `lastfm_api_key` and the secret in `lastfm_api_secret`, then
+   restart the add-on.
+3. Open the web page, go to **Settings**, and select **Connect** beside
+   Last.fm.
+4. Approve scrobSter in the tab that opens, then select **I approved it**.
 
-   ```sh
-   docker run --rm \
-     -e LASTFM_API_KEY=your-key \
-     -e LASTFM_API_SECRET=your-secret \
-     ghcr.io/benkelly/scrobster:0.1.2 python -m scrobster.auth
-   ```
-
-4. Open the URL it prints and choose **Yes, allow access**.
-5. Run the same command again with the token it printed added at the end.
-6. Copy the resulting session key into `lastfm_session_key`, and the user name
-   into `lastfm_username`.
+Every user repeats steps 3 and 4 for their own Last.fm account.
 
 ### Libre.fm
 

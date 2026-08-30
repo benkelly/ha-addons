@@ -1,6 +1,6 @@
 ---
 name: scrobSter
-version: "0.1.2"
+version: "0.2.1"
 slug: scrobster
 description: >-
   Identify the music playing around you with Shazam and scrobble it to Last.fm,
@@ -29,9 +29,14 @@ options:
   chunk_seconds: 12
   rescrobble_minutes: 30
   now_playing_stop_seconds: 180
+  admin_username: admin
 schema:
   audio_backend: list(pulse|alsa)
   audio_device: str
+  # The first start creates this account. Everything else is managed in the web
+  # page, under Settings and Users.
+  admin_username: str
+  admin_password: password?
   # Above 14 seconds Shazam stops matching, so the window is capped.
   chunk_seconds: int(5,14)
   match_interval: int(12,600)

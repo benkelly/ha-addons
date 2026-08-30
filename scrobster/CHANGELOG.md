@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.1
+
+- Accounts. Each person signs in and connects their own scrobbling services in
+  the web page, under Settings.
+- The room microphone is shared, so each user chooses whether to receive what it
+  hears. That choice starts off, because a room microphone cannot tell who is
+  listening.
+- Last.fm is now authorized in the browser. The command line step is gone.
+- Only an administrator starts or stops the microphone.
+- Set `admin_password` to choose the first password. Without it, a random one is
+  written to the log on the first start.
+- Through ingress there is no second sign-in, because Home Assistant has already
+  signed you in.
+- The service options below now only seed the first account. After that, manage
+  them in Settings.
+
 ## 0.1.2
 
 - Fix the add-on ignoring `audio_backend` and `audio_device`. The image pinned
