@@ -134,8 +134,11 @@ It also has a **use this device's mic** button. That records from the browser
 instead of the add-on, which is useful from a phone in a different room. Both
 inputs share one history and one duplicate filter.
 
-The browser microphone needs a secure context. It works through ingress,
-because Home Assistant serves that over your existing connection.
+That button needs a secure context, which is a browser rule and not a Home
+Assistant one. It works when you reach Home Assistant over `https`, for example
+through Nabu Casa or your own certificate. Over a plain `http` address the
+browser blocks the microphone, and the button reports that. The add-on
+microphone is not affected and keeps working either way.
 
 ## Use matches in Home Assistant
 
