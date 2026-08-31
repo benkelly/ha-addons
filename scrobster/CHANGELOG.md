@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.2
+
+- Fix `admin_password` doing nothing when the account already existed. Setting
+  it after the first start left the old random password in place, so the
+  administrator could not sign in. It is now applied on every start, which also
+  gives a way back in after a forgotten password.
+- An administrator can set a password for another account, under **Users**.
+
 ## 0.2.1
 
 - Accounts. Each person signs in and connects their own scrobbling services in

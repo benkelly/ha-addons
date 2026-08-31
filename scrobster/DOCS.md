@@ -38,6 +38,9 @@ The first start creates one administrator. Set `admin_password` to choose its
 password. Without one, a random password is written to the add-on log once, so
 read the log and then change it under Settings.
 
+`admin_password` applies on every start, not only the first one. If you forget
+the password, set this option, restart, and sign in with the new value.
+
 Through **Open Web UI** there is no sign-in, because Home Assistant has already
 signed you in and its rules say an add-on must not ask twice. A sign-in appears
 only when you reach the add-on another way, such as through a reverse proxy.
