@@ -1,4 +1,4 @@
-FROM ghcr.io/lostb1t/remux:0.27.0
+FROM ghcr.io/lostb1t/remux:0.28.1
 
 # The upstream image is Debian 13 and already ships jellyfin-ffmpeg7, yt-dlp and
 # curl, so jq is the only thing that needs adding to read the add-on options.
