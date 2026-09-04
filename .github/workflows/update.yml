@@ -22,29 +22,43 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # pin says where the image tag is written: dockerfile for an add-on
+          # that builds FROM the upstream image, config for one that names the
+          # image in config.yaml and lets Home Assistant append the version.
           - addon: aiostreams
             name: AIOStreams
             upstream: Viren070/AIOStreams
             image: ghcr.io/viren070/aiostreams
             # Image tags match the git tags, v prefix included.
             image_tag_style: same
+            pin: dockerfile
           - addon: uhf-server
             name: UHF Server
             upstream: swapplications/uhf-server-dist
             image: docker.io/swapplications/uhf-server
             image_tag_style: same
+            pin: dockerfile
           - addon: dispatcharr
             name: Dispatcharr
             upstream: Dispatcharr/Dispatcharr
             image: ghcr.io/dispatcharr/dispatcharr
             # Upstream tags v0.29.0 but publishes the image as 0.29.0.
             image_tag_style: strip-v
+            pin: dockerfile
           - addon: remux
             name: Remux
             upstream: lostb1t/remux
             image: ghcr.io/lostb1t/remux
             # Upstream tags v0.26.0 but publishes the image as 0.26.0.
             image_tag_style: strip-v
+            pin: dockerfile
+          - addon: scrobster
+            name: scrobSter
+            upstream: benkelly/scrobSter
+            image: ghcr.io/benkelly/scrobster
+            # Upstream tags v0.2.3 but publishes the image as 0.2.3.
+            image_tag_style: strip-v
+            pin: config
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
@@ -57,6 +71,7 @@ jobs:
           IMAGE: ${{ matrix.image }}
           ADDON: ${{ matrix.addon }}
           IMAGE_TAG_STYLE: ${{ matrix.image_tag_style }}
+          PIN: ${{ matrix.pin }}
         run: |
           set -euo pipefail
 
@@ -83,16 +98,24 @@ jobs:
             : > "${RUNNER_TEMP}/notes.md"
           fi
 
-          current="$(sed -n \
-            "s#^FROM ${IMAGE}:\(.*\)\$#\1#p" \
-            "${ADDON}/Dockerfile")"
+          if [ "${PIN}" = "config" ]; then
+            # Home Assistant pulls image:<version>, so the version field is
+            # the pinned tag.
+            pin_file="${ADDON}/config.yaml"
+            current="$(sed -n 's/^version: "\(.*\)"$/\1/p' "${pin_file}")"
+          else
+            pin_file="${ADDON}/Dockerfile"
+            current="$(sed -n \
+              "s#^FROM ${IMAGE}:\(.*\)\$#\1#p" \
+              "${pin_file}")"
+          fi
 
           if [ -z "${latest}" ] || [ "${latest}" = "null" ]; then
             echo "Could not resolve the latest upstream tag." >&2
             exit 1
           fi
           if [ -z "${current}" ]; then
-            echo "Could not find the pinned tag in ${ADDON}/Dockerfile." >&2
+            echo "Could not find the pinned tag in ${pin_file}." >&2
             exit 1
           fi
 
@@ -104,6 +127,14 @@ jobs:
             image_tag="${version}"
           else
             image_tag="${latest}"
+          fi
+
+          # A config pinned add-on has a single number for the add-on version
+          # and the image tag, so the two have to agree.
+          if [ "${PIN}" = "config" ] && [ "${image_tag}" != "${version}" ]; then
+            echo "${ADDON} is pinned in config.yaml, so Home Assistant pulls" \
+              "image:${version}, but upstream publishes ${image_tag}." >&2
+            exit 1
           fi
 
           echo "Pinned image tag: ${current}"
@@ -142,12 +173,16 @@ jobs:
           CURRENT: ${{ steps.upstream.outputs.current }}
           VERSION: ${{ steps.upstream.outputs.version }}
           IMAGE_TAG: ${{ steps.upstream.outputs.image_tag }}
+          PIN: ${{ matrix.pin }}
         run: |
           set -euo pipefail
 
-          # Pin the new image tag, never latest.
-          sed -i "s#^FROM ${IMAGE}:.*#FROM ${IMAGE}:${IMAGE_TAG}#" \
-            "${ADDON}/Dockerfile"
+          # Pin the new image tag, never latest. A config pinned add-on has
+          # no Dockerfile: its version field below is the tag.
+          if [ "${PIN}" != "config" ]; then
+            sed -i "s#^FROM ${IMAGE}:.*#FROM ${IMAGE}:${IMAGE_TAG}#" \
+              "${ADDON}/Dockerfile"
+          fi
 
           # Keep the add-on version in the same format as the original: the
           # upstream tag with any leading v stripped.
@@ -188,10 +223,9 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: update/${{ matrix.addon }}-${{ steps.upstream.outputs.latest }}
           delete-branch: true
-          add-paths: |
-            ${{ matrix.addon }}/Dockerfile
-            ${{ matrix.addon }}/config.yaml
-            ${{ matrix.addon }}/CHANGELOG.md
+          # The add-on directory, because a config pinned add-on has no
+          # Dockerfile and git add fails on a path that matches nothing.
+          add-paths: ${{ matrix.addon }}
           commit-message: >-
             Update ${{ matrix.name }} to ${{ steps.upstream.outputs.latest }}
           title: >-
