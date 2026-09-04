@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.3
+
+- Pick the microphone in the web page. An administrator opens **Settings**,
+  **Audio input**, and chooses from the devices ffmpeg can see. **Test level**
+  records three seconds from a device and reports its peak, so a silent input
+  is caught before you keep it. The choice is saved and outranks the
+  `audio_device` option.
+- Choose which microphone the browser uses, when you scrobble from a phone or a
+  laptop with **use this device's mic**. The page remembers the choice.
+- Clearer status on the page. It says what the add-on is doing, and errors
+  appear in place instead of in a browser dialog you have to dismiss.
+- The page now works on a phone.
+- Set `librefm_password` and let the add-on hash it. Only the hash is kept, so
+  running `md5sum` by hand is no longer necessary. `librefm_password_hash`
+  still works.
+
 ## 0.2.2
 
 - Fix `admin_password` doing nothing when the account already existed. Setting
