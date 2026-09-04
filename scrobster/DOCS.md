@@ -28,6 +28,12 @@ This is the part that decides whether the add-on works.
 Home Assistant passes that choice to the add-on, so leave `audio_device` at
 `default`. Only change it if you want a specific PulseAudio source by name.
 
+You can also pick the input in the web page. Sign in as an administrator, open
+**Settings**, and use **Audio input**. It lists the devices ffmpeg can see, and
+**Test level** records three seconds from the one you pick and reports the
+peak, so a silent input is caught before you keep it. That choice is saved and
+outranks `audio_device`, and **Reset** hands control back to the option.
+
 Any input that Home Assistant lists works, including a USB microphone and a USB
 sound card with a line input. A line input from a radio or an amplifier gives
 the best results, because it avoids room noise altogether.
@@ -85,8 +91,11 @@ Every user repeats steps 3 and 4 for their own Last.fm account.
 
 ### Libre.fm
 
-Set `librefm_username`, and `librefm_password_hash` to the md5 hash of your
-password:
+Set `librefm_username` and `librefm_password`. The add-on hashes the password
+on the first start and keeps only the hash.
+
+If you would rather not give the add-on the password itself, set
+`librefm_password_hash` to the md5 hash instead:
 
 ```sh
 printf '%s' 'your-password' | md5sum
@@ -104,7 +113,8 @@ only applies to `pulse`.
 
 The input to record. `default` follows the **Audio** setting, which is what you
 want. A PulseAudio source name also works, for example
-`alsa_input.usb-0d8c_USB_Audio-00.analog-stereo`.
+`alsa_input.usb-0d8c_USB_Audio-00.analog-stereo`. A device chosen under
+**Settings** in the web page outranks this option.
 
 ### `chunk_seconds`
 
@@ -155,8 +165,10 @@ Use **Open Web UI**. The page shows the current match, the input level, the
 scrobble history, and which service accepted each scrobble.
 
 It also has a **use this device's mic** button. That records from the browser
-instead of the add-on, which is useful from a phone in a different room. Both
-inputs share one history and one duplicate filter.
+instead of the add-on, which is useful from a phone in a different room. Once
+the browser has granted permission, a menu beside the button chooses which
+microphone, and the page remembers it. Both inputs share one history and one
+duplicate filter.
 
 That button needs a secure context, which is a browser rule and not a Home
 Assistant one. It works when you reach Home Assistant over `https`, for example

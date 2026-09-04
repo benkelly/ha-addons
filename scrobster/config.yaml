@@ -1,6 +1,6 @@
 ---
 name: scrobSter
-version: "0.2.2"
+version: "0.2.3"
 slug: scrobster
 description: >-
   Identify the music playing around you with Shazam and scrobble it to Last.fm,
@@ -49,6 +49,7 @@ schema:
   lastfm_session_key: password?
   lastfm_username: str?
   librefm_username: str?
+  librefm_password: password?
   librefm_password_hash: password?
   maloja_url: str?
   maloja_key: password?
