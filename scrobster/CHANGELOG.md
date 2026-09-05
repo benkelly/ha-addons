@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.4
+
+- Update scrobSter to [v0.2.4](https://github.com/benkelly/scrobSter/releases/tag/v0.2.4).
+
 ## 0.2.3
 
 - Pick the microphone in the web page. An administrator opens **Settings**,
