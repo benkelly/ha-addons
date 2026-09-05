@@ -1,6 +1,6 @@
 ---
 name: AIOStreams
-version: "2.33.2-1"
+version: "2.34.0"
 slug: aiostreams
 description: >-
   Consolidate multiple Stremio addons and debrid services into a single,

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.34.0
+
+- Update AIOStreams to [v2.34.0](https://github.com/Viren070/AIOStreams/releases/tag/v2.34.0).
+
 ## 2.33.2-1
 
 - Generate `SECRET_KEY` on the first start when it is left blank, and save it
