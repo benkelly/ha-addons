@@ -232,6 +232,10 @@ jobs:
             Update ${{ matrix.name }} to ${{ steps.upstream.outputs.latest }}
           body-path: ${{ runner.temp }}/pr-body.md
           labels: upstream-update
+          # Assign the repository owner so the bump lands in their
+          # notifications and in the "Assigned" filter rather than being
+          # noticed only by chance.
+          assignees: ${{ github.repository_owner }}
 
   # Add-ons pinned by digest rather than by tag, because their upstream
   # publishes only rolling tags and has no releases to follow.
@@ -366,3 +370,7 @@ jobs:
             Update ${{ matrix.name }} to the current ${{ matrix.tag }} image
           body-path: ${{ runner.temp }}/pr-body.md
           labels: upstream-update
+          # Assign the repository owner so the bump lands in their
+          # notifications and in the "Assigned" filter rather than being
+          # noticed only by chance.
+          assignees: ${{ github.repository_owner }}
