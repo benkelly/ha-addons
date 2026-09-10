@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.30.0
+
+- Update Remux to [v0.30.0](https://github.com/lostb1t/remux/releases/tag/v0.30.0).
+
 ## 0.29.0
 
 - Update Remux to [v0.29.0](https://github.com/lostb1t/remux/releases/tag/v0.29.0).
