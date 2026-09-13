@@ -18,12 +18,14 @@ full option reference.
 
 1. Read the security section of [DOCS.md](./DOCS.md). This add-on controls
    Docker on the host, which is not a small thing.
-2. Install the add-on, put at least one provider key in the configuration
-   (`anthropic_api_key` or `openrouter_api_key`) and a `git_token` scoped to
-   the repositories agents may push to.
-3. Start it. The first start pulls the LiteLLM and sandbox images, which takes
+2. Install the add-on and, on its **Info** tab, switch **Protection mode**
+   off: that is what lets the Supervisor hand it the Docker socket.
+3. Put at least one provider key in the configuration (`anthropic_api_key`
+   or `openrouter_api_key`) and a `git_token` scoped to the repositories
+   agents may push to.
+4. Start it. The first start pulls the LiteLLM and sandbox images, which takes
    a few minutes.
-4. Open the **MercurySandbox** panel in the sidebar, paste a repository URL
+5. Open the **MercurySandbox** panel in the sidebar, paste a repository URL
    and a task, and press **Spawn**. Watch the logs, then review the branch it
    pushes.
 
