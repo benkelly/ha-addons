@@ -52,6 +52,13 @@ jobs:
             # Upstream tags v0.26.0 but publishes the image as 0.26.0.
             image_tag_style: strip-v
             pin: dockerfile
+          - addon: mercury-sandbox
+            name: MercurySandbox
+            upstream: benkelly/MercurySandbox
+            image: ghcr.io/benkelly/mercury
+            # Upstream tags v0.1.0 but publishes the image as 0.1.0.
+            image_tag_style: strip-v
+            pin: dockerfile
           - addon: scrobster
             name: scrobSter
             upstream: benkelly/scrobSter
