@@ -12,6 +12,7 @@ set -euo pipefail
 OPTIONS_FILE=/data/options.json
 ENV_FILE=/data/mercury.env
 GENERATED_KEY_FILE=/data/master-key
+GENERATED_DB_PASSWORD_FILE=/data/db-password
 CONFIG_DIR=/config
 DOCKER_SOCK=/run/docker.sock
 INGRESS_PROXY=172.30.32.2
@@ -103,9 +104,48 @@ SANDBOX_MEMORY=$(opt sandbox_memory)
 [ -n "$SANDBOX_MEMORY" ] || SANDBOX_MEMORY=2g
 SANDBOX_CPUS=$(opt sandbox_cpus)
 [ -n "$SANDBOX_CPUS" ] || SANDBOX_CPUS=2
+SANDBOX_TIMEOUT=$(opt sandbox_timeout)
+[ -n "$SANDBOX_TIMEOUT" ] || SANDBOX_TIMEOUT=3600
 EXPOSE_GATEWAY=$(opt expose_gateway)
 API_TOKEN=$(opt api_token)
 TUNNEL_TOKEN=$(opt cloudflare_tunnel_token)
+
+# Per-sandbox gateway keys need a database beside the gateway; the password
+# for it is generated once, like the master key.
+VIRTUAL_KEYS=0
+DB_PASSWORD=""
+if [ "$(opt virtual_keys)" = "true" ]; then
+    VIRTUAL_KEYS=1
+    if [ ! -s "$GENERATED_DB_PASSWORD_FILE" ]; then
+        (umask 077; od -An -N24 -tx1 /dev/urandom | tr -d ' \n' > "$GENERATED_DB_PASSWORD_FILE")
+    fi
+    DB_PASSWORD=$(cat "$GENERATED_DB_PASSWORD_FILE")
+    log "Virtual keys on: each sandbox gets its own gateway key, capped at \$$(opt sandbox_budget_usd)"
+fi
+SANDBOX_BUDGET_USD=$(opt sandbox_budget_usd)
+[ -n "$SANDBOX_BUDGET_USD" ] || SANDBOX_BUDGET_USD=5
+
+# A GitHub App gives each sandbox a one-hour token for its one repository.
+GITHUB_APP_ID=$(opt github_app_id)
+GITHUB_APP_INSTALLATION_ID=$(opt github_app_installation_id)
+GITHUB_APP_KEY_FILE=""
+if [ -n "$GITHUB_APP_ID" ] || [ -n "$GITHUB_APP_INSTALLATION_ID" ]; then
+    if [ -z "$GITHUB_APP_ID" ] || [ -z "$GITHUB_APP_INSTALLATION_ID" ] || [ ! -f "$CONFIG_DIR/github-app.pem" ]; then
+        log "WARNING: a GitHub App needs github_app_id, github_app_installation_id and ${CONFIG_DIR}/github-app.pem; ignoring it"
+        GITHUB_APP_ID=""
+        GITHUB_APP_INSTALLATION_ID=""
+    else
+        GITHUB_APP_KEY_FILE="$CONFIG_DIR/github-app.pem"
+        log "GitHub App ${GITHUB_APP_ID}: sandboxes get one-hour single-repository tokens"
+    fi
+fi
+
+# Your own rules for the agent replace the ones baked into the sandbox image.
+RULES_FILE=""
+if [ -f "$CONFIG_DIR/AGENTS.md" ]; then
+    RULES_FILE="$CONFIG_DIR/AGENTS.md"
+    log "Agent rules from ${RULES_FILE}"
+fi
 
 GATEWAY_BIND=127.0.0.1
 if [ "$EXPOSE_GATEWAY" = "true" ]; then
@@ -139,7 +179,15 @@ env_line() {
         env_line SANDBOX_IMAGE "$SANDBOX_IMAGE" sandbox_image
         env_line SANDBOX_MEMORY "$SANDBOX_MEMORY" sandbox_memory
         env_line SANDBOX_CPUS "$SANDBOX_CPUS" sandbox_cpus
+        env_line SANDBOX_TIMEOUT "$SANDBOX_TIMEOUT" sandbox_timeout
         env_line GATEWAY_BIND "$GATEWAY_BIND" expose_gateway
+        env_line MERCURY_VIRTUAL_KEYS "$VIRTUAL_KEYS" virtual_keys
+        env_line LITELLM_DB_PASSWORD "$DB_PASSWORD" virtual_keys
+        env_line SANDBOX_BUDGET_USD "$SANDBOX_BUDGET_USD" sandbox_budget_usd
+        env_line GITHUB_APP_ID "$GITHUB_APP_ID" github_app_id
+        env_line GITHUB_APP_INSTALLATION_ID "$GITHUB_APP_INSTALLATION_ID" github_app_installation_id
+        env_line GITHUB_APP_PRIVATE_KEY_FILE "$GITHUB_APP_KEY_FILE" github_app_private_key
+        env_line SANDBOX_RULES_FILE "$RULES_FILE" rules
         env_line MERCURY_API_TOKEN "$API_TOKEN" api_token
         env_line CLOUDFLARE_TUNNEL_TOKEN "$TUNNEL_TOKEN" cloudflare_tunnel_token
     } > "$ENV_FILE"
@@ -152,6 +200,7 @@ env_line() {
 [ -f "$GATEWAY_CONFIG_DEFAULT" ] || cp "$GATEWAY_CONFIG" "$GATEWAY_CONFIG_DEFAULT"
 mkdir -p "$CONFIG_DIR"
 cp "$GATEWAY_CONFIG_DEFAULT" "$CONFIG_DIR/litellm.example.yaml"
+cp "$MERCURY_ROOT/sandbox/AGENTS.md" "$CONFIG_DIR/AGENTS.example.md"
 if [ -f "$CONFIG_DIR/litellm.yaml" ]; then
     cp "$CONFIG_DIR/litellm.yaml" "$GATEWAY_CONFIG"
     log "Model routing from ${CONFIG_DIR}/litellm.yaml"

@@ -37,6 +37,9 @@ options:
   sandbox_image: ""
   sandbox_memory: 2g
   sandbox_cpus: 2.0
+  sandbox_timeout: 3600
+  virtual_keys: false
+  sandbox_budget_usd: 5.0
   expose_gateway: false
 schema:
   # Left blank, a key is generated on first start and kept in add-on storage.
@@ -52,6 +55,16 @@ schema:
   sandbox_image: str?
   sandbox_memory: match(^[0-9]+[mMgG]$)
   sandbox_cpus: float(0.5,64)
+  sandbox_timeout: int(60,86400)
+  # Per-sandbox gateway keys (one model, a budget, an expiry). Starts a small
+  # Postgres beside the gateway for LiteLLM's key bookkeeping.
+  virtual_keys: bool
+  sandbox_budget_usd: float(0.01,10000)
+  # A GitHub App installed on the repositories agents may touch, for one-hour
+  # per-repository tokens instead of git_token. Its private key goes in the
+  # add-on config folder as github-app.pem.
+  github_app_id: str?
+  github_app_installation_id: str?
   expose_gateway: bool
   api_token: password?
   cloudflare_tunnel_token: password?

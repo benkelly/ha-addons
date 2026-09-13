@@ -88,6 +88,39 @@ Caps applied to every sandbox, `2g` and `2.0` by default. Size them for the
 host: a Raspberry Pi with 4 GB should not hand 2 GB to each of several
 sandboxes at once.
 
+### `sandbox_timeout`
+
+Seconds a sandbox may spend in opencode before it is stopped, `3600` by
+default. Whatever it managed by then is still committed and pushed, marked
+as cut off in the log.
+
+### `virtual_keys`
+
+Off by default, which hands every sandbox the gateway master key. Turn it on
+and the add-on starts a small Postgres beside the gateway (password
+generated once into add-on storage) so LiteLLM can mint a key per sandbox:
+one model, a spend cap of `sandbox_budget_usd`, valid for a day. The master
+key then never enters a sandbox. The first start after turning it on pulls a
+Postgres image and takes a little longer.
+
+### `sandbox_budget_usd`
+
+Spend cap for each sandbox's key when `virtual_keys` is on, `5` by default.
+
+### `github_app_id` and `github_app_installation_id`
+
+A GitHub App installed on the repositories agents may touch. With both set
+and the App's private key saved as `/addon_configs/<slug>/github-app.pem`,
+every sandbox gets a one-hour token for its one repository instead of
+`git_token`, which then only serves repositories off GitHub.
+
+To make one: create a GitHub App under your account with repository
+permission **Contents: read and write** (and **Pull requests: read and
+write** for the "open a pull request" box on the page), install it on
+exactly the repositories agents may push to, and note the App ID, the
+installation ID from the installation's URL, and the private key it
+generates.
+
 ### `expose_gateway`
 
 Off by default, which publishes the gateway on the host's loopback only,
@@ -112,6 +145,18 @@ containers on the host, so treat it like an SSH key.
 Optional. Starts a `cloudflared` container on its own network for sharing a
 UI beyond your LAN. Put a Cloudflare Access policy in front of every route,
 and never route to the gateway or to port `5004`.
+
+## Agent rules and context
+
+Every sandbox reads a global `AGENTS.md` explaining the harness: the branch
+exists, commit and push are handled, there is a time limit and a budget, read
+the repository's own instructions, finish with a summary a reviewer can use.
+The add-on writes the built-in one to `/addon_configs/<slug>/AGENTS.example.md`;
+save your own as `AGENTS.md` in that folder and restart to replace it.
+
+Per task, the **context** box on the page (or `context` in the API) appends
+links, constraints and how to test, so the task itself stays short. Tick
+**open a pull request** to have the run open the PR for you after pushing.
 
 ## Model routing
 
@@ -149,7 +194,11 @@ one, `DELETE /api/sandboxes/<name>` stops one.
   at every start. Readable by root only.
 - `/data/master-key`, the generated gateway key when `litellm_master_key` is
   blank.
-- `/addon_configs/<slug>/litellm.yaml`, your model routing if you made one.
+- `/data/db-password`, the generated Postgres password when `virtual_keys`
+  is on. The database itself lives in a Docker volume on the host,
+  `mercury_gateway-db`.
+- `/addon_configs/<slug>/litellm.yaml`, your model routing if you made one;
+  `AGENTS.md`, your agent rules; `github-app.pem`, the App's private key.
 
 There is no database. Sandboxes keep nothing; their only output is the branch
 they push.
@@ -161,10 +210,11 @@ The add-on starts these on the host's Docker, all named so you can find them:
 | Container | What |
 | --- | --- |
 | `mercury-gateway` | LiteLLM, built from a pinned release plus your routing |
+| `mercury-gateway-db` | Postgres for virtual keys, only with `virtual_keys` on |
 | `mercury-cloudflared` | only with a tunnel token |
 | `mercury-<timestamp>-<id>` | one per sandbox, removed when it exits |
 
-Plus the `agentnet` network and the `edge` network, the images
+Plus the `agentnet`, `edge` and `mercury-gwdb` networks, the images
 `mercury-gateway:local`, the pinned LiteLLM image and the sandbox image.
 
 Stopping the add-on stops the gateway. Running sandboxes are left alone and
@@ -177,8 +227,9 @@ SSH add-on with protection mode off, or the console):
 
 ```sh
 docker ps -aq --filter label=mercury.sandbox | xargs -r docker rm -f
-docker rm -f mercury-gateway mercury-cloudflared 2>/dev/null
-docker network rm agentnet edge 2>/dev/null
+docker rm -f mercury-gateway mercury-gateway-db mercury-cloudflared 2>/dev/null
+docker network rm agentnet edge mercury-gwdb 2>/dev/null
+docker volume rm mercury_gateway-db 2>/dev/null   # the virtual key database
 docker image rm mercury-gateway:local
 docker image prune   # then, for the LiteLLM and sandbox images
 ```
