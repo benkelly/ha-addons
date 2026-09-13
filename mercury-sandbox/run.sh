@@ -47,10 +47,16 @@ fi
 if [ -S "$DOCKER_SOCK" ]; then
     export DOCKER_HOST="unix://$DOCKER_SOCK"
 fi
+if [ ! -S "$DOCKER_SOCK" ]; then
+    log "FATAL: no Docker socket at ${DOCKER_SOCK}."
+    log "The Supervisor mounts it only while Protection mode is OFF for this add-on:"
+    log "  Settings -> Add-ons -> MercurySandbox -> Info -> Protection mode -> off, then Start."
+    log "Read DOCS.md first: with protection off this add-on controls Docker on the host."
+    exit 1
+fi
 if ! docker info > /dev/null 2>&1; then
-    log "FATAL: cannot reach the host's Docker at ${DOCKER_HOST:-the default socket}."
-    log "This add-on needs docker_api, which the Supervisor grants from config.yaml."
-    log "If the add-on was installed from a different repository, that grant is missing."
+    log "FATAL: the Docker socket is mounted but the daemon does not answer on it."
+    docker info 2>&1 | sed 's/^/[mercury]   /' | head -n 5
     exit 1
 fi
 

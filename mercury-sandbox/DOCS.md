@@ -7,7 +7,7 @@ release, and drives the host's Docker to run the rest of the
 ## Before you install: what `docker_api` means
 
 This add-on asks for `docker_api`, which mounts the host's Docker socket into
-it. That is full control of every container on the host, Home Assistant and
+it once you switch the add-on's protection mode off. That is full control of every container on the host, Home Assistant and
 the Supervisor included. The add-on uses it for exactly two things, starting
 the LLM gateway and starting sandboxes, but the grant itself cannot be made
 narrower than root on the host. That is why the security rating is as low as
@@ -26,15 +26,18 @@ choose.
 ## Setup
 
 1. Add this repository to Home Assistant, then install **MercurySandbox**.
-2. In the configuration, set at least one of `anthropic_api_key` and
+2. On the add-on's **Info** tab, switch **Protection mode** off. The
+   Supervisor mounts the host's Docker socket only while it is off; with it
+   on, the add-on stops at start with a message saying so.
+3. In the configuration, set at least one of `anthropic_api_key` and
    `openrouter_api_key`, and a `git_token`.
-3. Start the add-on and watch the log. The first start pulls the LiteLLM
+4. Start the add-on and watch the log. The first start pulls the LiteLLM
    image (about 1.5 GB) and the sandbox image, builds the gateway with your
    model routing, and starts both. The health check allows ten minutes for
    this.
-4. Open the **MercurySandbox** panel in the sidebar. The three chips at the
+5. Open the **MercurySandbox** panel in the sidebar. The three chips at the
    top should read `docker ok`, `gateway ok` and `0 running`.
-5. Paste a repository URL and a task, choose a model, and press **Spawn**.
+6. Paste a repository URL and a task, choose a model, and press **Spawn**.
    Follow the logs. When the sandbox finishes it pushes a branch named
    `agent/<timestamp>` for you to review.
 
@@ -256,10 +259,10 @@ Each bump is reviewed and merged by hand.
 
 ## Troubleshooting
 
-**The log says it cannot reach the host's Docker.** The `docker_api` grant is
-missing. That happens when the add-on was installed from a fork that dropped
-it from `config.yaml`, or on an unusual installation where the Supervisor
-does not expose the socket. Nothing else in this add-on works without it.
+**The log says there is no Docker socket.** Protection mode is on. The
+Supervisor mounts the socket that `docker_api` asks for only while
+protection mode is off for this add-on: **Info** tab, **Protection mode**,
+off, then start again. Nothing else in this add-on works without it.
 
 **The first start takes ages.** It is pulling a LiteLLM image of about 1.5 GB
 and a node based sandbox image. The health check waits ten minutes. On a
