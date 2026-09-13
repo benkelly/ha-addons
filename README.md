@@ -19,6 +19,7 @@ https://github.com/benkelly/ha-addons
 | ------ | ----------- | ------------- |
 | [AIOStreams](./aiostreams) | Consolidates multiple Stremio addons and debrid services into a single, customisable super-addon. | `amd64`, `aarch64` |
 | [Dispatcharr](./dispatcharr) | IPTV playlist and EPG management, consolidating multiple providers into one tidy source. | `amd64`, `aarch64` |
+| [MercurySandbox](./mercury-sandbox) | A safe playground for autonomous coding agents: an LLM gateway that holds your API keys and throwaway opencode sandboxes that hold none. Controls Docker on the host, read its docs first. | `amd64`, `aarch64` |
 | [Remux](./remux) | Jellyfin compatible media server bringing Stremio add-ons, local files and WebDAV sources together. | `amd64`, `aarch64` |
 | [scrobSter](./scrobster) | Identifies the music playing in the room with Shazam and scrobbles it to Last.fm, Libre.fm, ListenBrainz or Maloja. | `amd64`, `aarch64` |
 | [Tvheadend](./tvheadend) | TV streaming server and recorder for DVB, ATSC, IPTV and SAT>IP sources. | `amd64`, `aarch64`, `armv7` |
@@ -34,13 +35,16 @@ https://github.com/benkelly/ha-addons
   [`ghcr.io/lostb1t/remux`](https://github.com/lostb1t/remux),
   [`ghcr.io/tvheadend/tvheadend`](https://github.com/tvheadend/tvheadend) and
   [`swapplications/uhf-server`](https://github.com/swapplications/uhf-server-dist).
-  scrobSter is the exception: it is written in this account, and its image
-  [`ghcr.io/benkelly/scrobster`](https://github.com/benkelly/scrobSter) is built
-  by that repository.
+  scrobSter and MercurySandbox are the exceptions: they are written in this
+  account, and their images
+  [`ghcr.io/benkelly/scrobster`](https://github.com/benkelly/scrobSter) and
+  [`ghcr.io/benkelly/mercury`](https://github.com/benkelly/MercurySandbox) are
+  built by those repositories.
 - Version bumps are proposed by a scheduled workflow as pull requests, and are
   merged by hand so each upstream release gets reviewed.
 - Add-on icons and logos are derived from each project's own artwork
   (AIOStreams GPL-3.0, Dispatcharr AGPL-3.0, Remux AGPL-3.0, Tvheadend
   GPL-3.0). The UHF Server image ships none, so that icon comes from the UHF
-  app's published avatar.
+  app's published avatar. The MercurySandbox icon is a crop of that project's
+  own banner.
 - This repository carries no licence.

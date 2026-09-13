@@ -1,0 +1,70 @@
+---
+name: MercurySandbox
+version: "0.1.0"
+slug: mercury_sandbox
+description: >-
+  A safe playground for autonomous coding agents: an LLM gateway that holds
+  your API keys and throwaway opencode sandboxes that hold none.
+url: https://github.com/benkelly/ha-addons/tree/main/mercury-sandbox
+arch:
+  - aarch64
+  - amd64
+startup: services
+# The add-on drives the host's Docker to run the gateway and every sandbox as
+# sibling containers. This grant is what the add-on is for, and it is what
+# costs it the security rating: read DOCS.md before installing.
+docker_api: true
+# Asked once at start for this container's own name, so it can join the
+# sandbox network and reach the gateway.
+hassio_api: true
+ingress: true
+ingress_port: 5004
+panel_icon: mdi:flask-outline
+ports:
+  5004/tcp: null
+ports_description:
+  5004/tcp: mercuryd API and web page without ingress, needs api_token
+map:
+  - addon_config:rw
+options:
+  litellm_master_key: ""
+  anthropic_api_key: ""
+  openrouter_api_key: ""
+  git_token: ""
+  git_name: mercury-sandbox
+  git_email: agents@example.com
+  default_model: cheap-default
+  sandbox_image: ""
+  sandbox_memory: 2g
+  sandbox_cpus: 2.0
+  sandbox_timeout: 3600
+  virtual_keys: false
+  sandbox_budget_usd: 5.0
+  expose_gateway: false
+schema:
+  # Left blank, a key is generated on first start and kept in add-on storage.
+  litellm_master_key: password?
+  anthropic_api_key: password?
+  openrouter_api_key: password?
+  openai_api_key: password?
+  git_token: password?
+  git_name: str
+  git_email: str
+  default_model: str
+  # Blank means the sandbox image from the same MercurySandbox release.
+  sandbox_image: str?
+  sandbox_memory: match(^[0-9]+[mMgG]$)
+  sandbox_cpus: float(0.5,64)
+  sandbox_timeout: int(60,86400)
+  # Per-sandbox gateway keys (one model, a budget, an expiry). Starts a small
+  # Postgres beside the gateway for LiteLLM's key bookkeeping.
+  virtual_keys: bool
+  sandbox_budget_usd: float(0.01,10000)
+  # A GitHub App installed on the repositories agents may touch, for one-hour
+  # per-repository tokens instead of git_token. Its private key goes in the
+  # add-on config folder as github-app.pem.
+  github_app_id: str?
+  github_app_installation_id: str?
+  expose_gateway: bool
+  api_token: password?
+  cloudflare_tunnel_token: password?
