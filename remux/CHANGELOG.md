@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.35.1
+
+- Update Remux to [v0.35.1](https://github.com/lostb1t/remux/releases/tag/v0.35.1).
+
 ## 0.35.0
 
 - Update Remux to [v0.35.0](https://github.com/lostb1t/remux/releases/tag/v0.35.0).
