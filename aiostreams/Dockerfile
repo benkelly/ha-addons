@@ -3,7 +3,7 @@
 # official jq image instead of installing one.
 FROM ghcr.io/jqlang/jq:1.8.1 AS jq
 
-FROM ghcr.io/viren070/aiostreams:v2.35.7
+FROM ghcr.io/viren070/aiostreams:v2.35.8
 
 COPY --from=jq /jq /usr/local/bin/jq
 COPY ensure-secret-key.js /ensure-secret-key.js
