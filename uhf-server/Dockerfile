@@ -1,4 +1,4 @@
-FROM docker.io/swapplications/uhf-server:2.0.0
+FROM docker.io/swapplications/uhf-server:2.1.0
 
 # The upstream image is Ubuntu 25.04 and already ships FFmpeg 7.1.1 (upstream
 # requires 7 or newer) and comskip for commercial detection. jq reads the
