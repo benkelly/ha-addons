@@ -1,6 +1,6 @@
 ---
 name: UHF Server
-version: "2.0.0"
+version: "2.1.0"
 slug: uhf_server
 description: >-
   DVR recording server for the UHF app, with recordings stored in the Home
