@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.2.5
+
+- Update scrobSter to [v0.2.5](https://github.com/benkelly/scrobSter/releases/tag/v0.2.5).
+- Security: a reverse proxy on the same host that passed `X-Forwarded-For`
+  through let anyone pose as Home Assistant ingress and be signed in as the
+  owner. The header is no longer trusted. The add-on itself was not exposed.
+- A clip from one person's browser microphone no longer shows on everyone
+  else's page or in their Home Assistant sensor.
+- Changing a password, or resetting one, signs that account out everywhere
+  else.
+- The last administrator can no longer remove their own role.
+- A Shazam rate limit no longer stalls listening for about twelve minutes. The
+  add-on waits and tries again, and says it is rate limited.
+- A microphone that opens but sends no audio no longer hangs listening for
+  good, and stopping no longer leaves the device busy.
+- A scrobbling service that is down no longer holds up the others.
+- A Last.fm or Libre.fm password changed in Settings takes effect without a
+  restart.
+- Old sign-ins and records that only ever grew are now cleaned up.
+
 ## 0.2.4
 
 - Update scrobSter to [v0.2.4](https://github.com/benkelly/scrobSter/releases/tag/v0.2.4).
