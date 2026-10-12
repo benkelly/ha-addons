@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.6
+
+- Update scrobSter to [v0.2.6](https://github.com/benkelly/scrobSter/releases/tag/v0.2.6).
+- ListenBrainz and Maloja now receive MusicBrainz IDs, found from the ISRC
+  that Shazam returns. ListenBrainz uses them to show the album's cover from
+  the Cover Art Archive.
+- Maloja now gets Shazam's cover for an album that only shows a placeholder.
+  A picture Maloja already has is never replaced.
+- Last.fm and Libre.fm are unchanged: they have no way to receive artwork.
+
 ## 0.2.5
 
 - Update scrobSter to [v0.2.5](https://github.com/benkelly/scrobSter/releases/tag/v0.2.5).
