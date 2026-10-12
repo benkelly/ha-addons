@@ -21,7 +21,7 @@ https://github.com/benkelly/ha-addons
 | [Dispatcharr](./dispatcharr) | IPTV playlist and EPG management, consolidating multiple providers into one tidy source. | `amd64`, `aarch64` |
 | [MercurySandbox](./mercury-sandbox) | A safe playground for autonomous coding agents: an LLM gateway that holds your API keys and throwaway opencode sandboxes that hold none. Controls Docker on the host, read its docs first. | `amd64`, `aarch64` |
 | [Remux](./remux) | Jellyfin compatible media server bringing Stremio add-ons, local files and WebDAV sources together. | `amd64`, `aarch64` |
-| [scrobSter](./scrobster) | Identifies the music playing in the room with Shazam and scrobbles it to Last.fm, Libre.fm, ListenBrainz or Maloja. | `amd64`, `aarch64` |
+| [scrobSter](./scrobster) | Identifies the music playing in your rooms, cameras included, with Shazam and scrobbles it to Last.fm, Libre.fm, ListenBrainz or Maloja. | `amd64`, `aarch64` |
 | [Tvheadend](./tvheadend) | TV streaming server and recorder for DVB, ATSC, IPTV and SAT>IP sources. | `amd64`, `aarch64`, `armv7` |
 | [UHF Server](./uhf-server) | DVR recording server for the UHF app, with recordings stored in the Home Assistant media folder. | `amd64`, `aarch64` |
 

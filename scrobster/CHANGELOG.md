@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.3.0
+
+- Update scrobSter to [v0.3.0](https://github.com/benkelly/scrobSter/releases/tag/v0.3.0).
+- Listen in more than one room, including the audio of your cameras. A new
+  **Rooms** tab lists each room with its live level and what it hears. A room
+  is a microphone or a camera's `rtsp://` or `rtsps://` stream, UniFi Protect
+  included.
+- Each person chooses which rooms scrobble for them, with **scrobble for me**.
+  A song that two rooms hear at once is still one play.
+- The history shows the room that heard each song.
+- A camera password stays in the add-on. The page shows it as `***`, and
+  errors are cleaned of it.
+- New option `recognition_gap_seconds`: every room shares one Shazam budget,
+  at most one request per this many seconds. Defaults to `4`.
+- The microphone becomes the first room, named "Server mic", with the input
+  you chose in the web page. Rename it after the room it is in. The
+  **Settings**, **Audio input** card moved into the **Rooms** tab.
+- For a REST sensor, `/api/status` keeps its fields and adds `rooms`.
+
 ## 0.2.6
 
 - Update scrobSter to [v0.2.6](https://github.com/benkelly/scrobSter/releases/tag/v0.2.6).

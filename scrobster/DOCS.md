@@ -5,9 +5,10 @@ Nothing is compiled on your device.
 
 ## How it works
 
-Every `match_interval` seconds the add-on records `chunk_seconds` of audio from
-the microphone. It builds an audio signature on the device and asks Shazam to
-identify it. Only the signature leaves your network, never the recording.
+Every `match_interval` seconds the add-on records `chunk_seconds` of audio in
+each room: the microphone, and any camera you add. It builds an audio signature
+on the device and asks Shazam to identify it. Only the signature leaves your
+network, never the recording.
 
 A match does two things. It marks the track as playing now, so your profile
 shows the live line while the song continues. It also scrobbles the track once
@@ -28,15 +29,54 @@ This is the part that decides whether the add-on works.
 Home Assistant passes that choice to the add-on, so leave `audio_device` at
 `default`. Only change it if you want a specific PulseAudio source by name.
 
-You can also pick the input in the web page. Sign in as an administrator, open
-**Settings**, and use **Audio input**. It lists the devices ffmpeg can see, and
-**Test level** records three seconds from the one you pick and reports the
-peak, so a silent input is caught before you keep it. That choice is saved and
-outranks `audio_device`, and **Reset** hands control back to the option.
+The microphone is the first room, named "Server mic". To pick another input in
+the web page, open **Rooms** as an administrator and select **Edit** on that
+room. The form lists the devices ffmpeg can see, and **Test level** records
+three seconds from the one you pick and reports the peak, so a silent input is
+caught before you keep it. A device chosen there outranks `audio_device`;
+**Default from the environment** hands control back to the option.
 
 Any input that Home Assistant lists works, including a USB microphone and a USB
 sound card with a line input. A line input from a radio or an amplifier gives
 the best results, because it avoids room noise altogether.
+
+## Rooms and cameras
+
+Each room is one input: the microphone, or a camera. The **Rooms** tab shows
+every room with its live level and what it hears. Rename "Server mic" after the
+room it is in with **Edit**.
+
+To add a camera, open **Rooms** as an administrator and fill in **Add a room**:
+
+1. Give it a name, for example `Kitchen`.
+2. Under **Listens through**, choose **A camera or stream**.
+3. Paste the camera's URL, for example
+   `rtsps://192.168.1.1:7441/abcdEFGH?enableSrtp` from UniFi Protect, or
+   `rtsp://user:password@192.168.1.20:554/stream2`.
+4. Select **Test level**. A camera that hears sound reports a peak. A camera
+   with its audio turned off says so.
+5. Select **Add room**.
+
+The add-on asks the camera for its audio only, so no video is downloaded.
+
+Tips:
+
+- **Turn on the camera's audio**, and choose AAC at 16 kHz or more if the camera
+  offers it. G.711 at 8 kHz cuts the sound Shazam relies on, and matches less
+  often.
+- **If you run Frigate or go2rtc**, use its restream, for example
+  `rtsp://homeassistant.local:8554/kitchen`. Many cameras accept only a few
+  connections at once.
+- **The camera password stays in the add-on.** The page shows it as `***`.
+  Leave the `***` in place when you edit the URL, and the saved password is
+  kept.
+
+Each person turns on **scrobble for me** for the rooms they want. A room
+scrobbles for nobody until then, except for the administrator who added it. A
+song that two rooms hear at once is still one play.
+
+Every room asks Shazam from the same address, so requests take turns, at most
+one per `recognition_gap_seconds`. A room that hears silence asks nothing.
 
 ## Accounts
 
@@ -54,7 +94,7 @@ only when you reach the add-on another way, such as through a reverse proxy.
 An administrator adds more people under **Users**. Each person then connects
 their own services under **Settings**, and their history is their own.
 
-Only an administrator starts or stops the microphone.
+Only an administrator starts or stops listening, and adds or changes rooms.
 
 ## Connect a service
 
@@ -113,8 +153,8 @@ only applies to `pulse`.
 
 The input to record. `default` follows the **Audio** setting, which is what you
 want. A PulseAudio source name also works, for example
-`alsa_input.usb-0d8c_USB_Audio-00.analog-stereo`. A device chosen under
-**Settings** in the web page outranks this option.
+`alsa_input.usb-0d8c_USB_Audio-00.analog-stereo`. A device chosen for a room
+on the **Rooms** tab outranks this option.
 
 ### `chunk_seconds`
 
@@ -125,9 +165,16 @@ Do not assume that more is better. Windows of 8 to 14 seconds match, but 16 and
 
 ### `match_interval`
 
-Minimum seconds between attempts. Defaults to `15`. Raise it if Shazam
-rate-limits your address. Silence costs nothing, because the add-on skips the
-request when it hears nothing.
+Minimum seconds between attempts, in each room. Defaults to `15`. Raise it if
+Shazam rate-limits your address. Silence costs nothing, because the add-on
+skips the request when it hears nothing.
+
+### `recognition_gap_seconds`
+
+Minimum seconds between two Shazam requests, across every room and browser
+clip. Defaults to `4`. Requests wait their turn, so adding rooms does not add
+to the rate. Raise it if Shazam rate-limits your address while several rooms
+hear music at once.
 
 ### `rescrobble_minutes`
 
@@ -161,8 +208,9 @@ The web page asks for the token once and keeps it in browser storage.
 
 ## The web page
 
-Use **Open Web UI**. The page shows the current match, the input level, the
-scrobble history, and which service accepted each scrobble.
+Use **Open Web UI**. **Listening** shows the current match, the scrobble
+history, and which service accepted each scrobble. **Rooms** shows each room's
+input level and what it hears.
 
 It also has a **use this device's mic** button. That records from the browser
 instead of the add-on, which is useful from a phone in a different room. Once
@@ -207,8 +255,9 @@ does not resolve. Set `api_token` to nothing while you do this, because the
 sensor sends no token.
 
 The attributes carry the detail. `last_match` holds the artist, title, album,
-cover art URL and the position inside the track. `level_db` is the input level,
-which is useful for an alert when the microphone goes silent:
+cover art URL, the position inside the track, and the room that heard it.
+`level_db` is the input level of the first room, which is useful for an alert
+when the microphone goes silent:
 
 ```yaml
 automation:
@@ -225,13 +274,22 @@ automation:
           message: scrobSter input has been silent for ten minutes.
 ```
 
+For a sensor per room, add `rooms` to `json_attributes`, or use this
+`value_template` for the kitchen:
+
+```yaml
+    value_template: >-
+      {% set room = value_json.rooms | selectattr('name', 'eq', 'Kitchen') | first %}
+      {{ room.last_match.title if room and room.last_match else 'nothing' }}
+```
+
 The sensor reports the last match, which stays after the song ends. Use the
 `last_match.ts` attribute, a unix timestamp, when you need to know how recent
 it is.
 
 ## Troubleshooting
 
-**Nothing is ever matched.** Read `input <n> dBFS` on the page.
+**Nothing is ever matched.** Read the room's level on the **Rooms** tab.
 
 - About -91 dBFS means the input is silent. Choose a different input under the
   **Audio** setting.
