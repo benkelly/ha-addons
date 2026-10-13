@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.1
+
+- Update scrobSter to [v0.3.1](https://github.com/benkelly/scrobSter/releases/tag/v0.3.1).
+- Tune how often Shazam is asked, in the web page and without a restart. An
+  administrator finds **Recognition** at the bottom of the **Rooms** tab, with
+  the seconds between Shazam requests and the seconds between listens in each
+  room. A choice made there outranks `recognition_gap_seconds` and
+  `match_interval` until **Back to the configured rates**.
+- The card counts the Shazam requests of the last ten minutes, says when Shazam
+  last limited them, and warns when your rooms would want requests faster than
+  the limit allows.
+
 ## 0.3.0
 
 - Update scrobSter to [v0.3.0](https://github.com/benkelly/scrobSter/releases/tag/v0.3.0).
