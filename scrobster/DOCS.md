@@ -78,6 +78,13 @@ song that two rooms hear at once is still one play.
 Every room asks Shazam from the same address, so requests take turns, at most
 one per `recognition_gap_seconds`. A room that hears silence asks nothing.
 
+To tune that without a restart, open **Rooms** as an administrator and use
+**Recognition** at the bottom. It sets the seconds between Shazam requests and
+between listens in each room, and a change applies at once. It also counts the
+requests of the last ten minutes, says when Shazam last limited them, and warns
+when your rooms would want requests faster than the limit allows. A choice made
+there outranks the two options below, until **Back to the configured rates**.
+
 ## Accounts
 
 The first start creates one administrator. Set `admin_password` to choose its
@@ -167,14 +174,15 @@ Do not assume that more is better. Windows of 8 to 14 seconds match, but 16 and
 
 Minimum seconds between attempts, in each room. Defaults to `15`. Raise it if
 Shazam rate-limits your address. Silence costs nothing, because the add-on
-skips the request when it hears nothing.
+skips the request when it hears nothing. **Recognition** on the **Rooms** tab
+outranks this option.
 
 ### `recognition_gap_seconds`
 
 Minimum seconds between two Shazam requests, across every room and browser
 clip. Defaults to `4`. Requests wait their turn, so adding rooms does not add
 to the rate. Raise it if Shazam rate-limits your address while several rooms
-hear music at once.
+hear music at once. **Recognition** on the **Rooms** tab outranks this option.
 
 ### `rescrobble_minutes`
 
