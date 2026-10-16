@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0
+
+- Update scrobSter to [v0.4.0](https://github.com/benkelly/scrobSter/releases/tag/v0.4.0).
+- Each room's meter on the **Rooms** tab now moves a few times a second while
+  the room records, instead of once a cycle. Between two recordings it holds
+  its last value.
+- A room's cover art is larger, with the title and the artist on two lines. On
+  a phone the meter sits under the track.
+- The web page uses the new pug icon. No option changes.
+
 ## 0.3.1
 
 - Update scrobSter to [v0.3.1](https://github.com/benkelly/scrobSter/releases/tag/v0.3.1).
