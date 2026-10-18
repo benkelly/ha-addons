@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.2.1
+
+- Update UHF Server to [2.2.1](https://github.com/swapplications/uhf-server-dist/releases/tag/2.2.1).
+
 ## 2.2.0
 
 - Update UHF Server to [2.2.0](https://github.com/swapplications/uhf-server-dist/releases/tag/2.2.0).
