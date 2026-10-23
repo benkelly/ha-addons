@@ -4,7 +4,7 @@
 #
 # This is master-debian as of 2026-08-22, tvheadend 4.3-2763~g45cbe4adb.
 # Pinning the index digest rather than a per-platform one keeps it multi-arch.
-FROM ghcr.io/tvheadend/tvheadend@sha256:63f59723e83319a3dec869d26078f04dec9514d28a4ada45dcc78165f99d38c9
+FROM ghcr.io/tvheadend/tvheadend@sha256:2c4d2830657d88742330667b396ed05f53f7caa64c29dd9663851e9a1a0e41a6
 
 # Upstream runs as the unprivileged tvheadend user, which cannot write the root
 # owned /data the Supervisor provides. Add-ons run as root by convention, so
