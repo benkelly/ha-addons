@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.1
+
+- Update scrobSter to [v0.5.1](https://github.com/benkelly/scrobSter/releases/tag/v0.5.1).
+- A restart in the middle of a song, such as an add-on update, no longer
+  scrobbles that song a second time.
+- Installing the Mosquitto broker add-on after scrobSter started is noticed
+  within five minutes, without a restart. The warning about a missing broker
+  appears once.
+- New `GET /api/events`: what happens, as it happens, as server-sent events,
+  for scripts and integrations. No option changes.
+
 ## 0.5.0
 
 - Update scrobSter to [v0.5.0](https://github.com/benkelly/scrobSter/releases/tag/v0.5.0).
