@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.1
+
+- Update scrobSter to [v0.6.1](https://github.com/benkelly/scrobSter/releases/tag/v0.6.1).
+- Scrobbles to Libre.fm failed every time with "Invalid parameters - Your
+  request is missing a required parameter", while Libre.fm's playing-now mark
+  worked. Scrobbles are now sent in the form Libre.fm accepts. No option
+  changes.
+
 ## 0.6.0
 
 - Update scrobSter to [v0.6.0](https://github.com/benkelly/scrobSter/releases/tag/v0.6.0).
