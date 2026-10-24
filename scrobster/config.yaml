@@ -1,6 +1,6 @@
 ---
 name: scrobSter
-version: "0.4.0"
+version: "0.5.0"
 slug: scrobster
 description: >-
   Identify the music playing around you with Shazam and scrobble it to Last.fm,
@@ -15,6 +15,10 @@ startup: services
 # Take the microphone from the Home Assistant audio system. Choose the input
 # under the add-on Audio setting; the add-on follows that choice.
 audio: true
+# Hand the add-on the Mosquitto broker, if one is installed, so the rooms and
+# users appear as devices in Home Assistant with nothing to type.
+services:
+  - mqtt:want
 ingress: true
 ingress_port: 8000
 panel_icon: mdi:music-circle
@@ -31,6 +35,7 @@ options:
   rescrobble_minutes: 30
   now_playing_stop_seconds: 180
   admin_username: admin
+  mqtt_enabled: true
 schema:
   audio_backend: list(pulse|alsa)
   audio_device: str
@@ -57,3 +62,5 @@ schema:
   maloja_url: str?
   maloja_key: password?
   api_token: password?
+  # Publish rooms and users as Home Assistant devices through MQTT.
+  mqtt_enabled: bool

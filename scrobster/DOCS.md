@@ -198,6 +198,12 @@ value makes the mark flicker while a song is still playing. ListenBrainz and
 Maloja are cleared through an API call. Last.fm has no method to clear a mark,
 so its copy disappears a few minutes later on its own.
 
+### `mqtt_enabled`
+
+Publish the rooms and users as Home Assistant devices, through the Mosquitto
+broker add-on. On by default. Without a broker the add-on writes one warning to
+its log and carries on. See **Devices in Home Assistant**.
+
 ### `api_token`
 
 Optional. When set, the JSON API needs the header
@@ -232,10 +238,102 @@ through Nabu Casa or your own certificate. Over a plain `http` address the
 browser blocks the microphone, and the button reports that. The add-on
 microphone is not affected and keeps working either way.
 
-## Use matches in Home Assistant
+## Devices in Home Assistant
 
-The add-on serves a JSON status endpoint, so you can turn what it hears into a
-sensor and use it in automations.
+The add-on publishes every room and every user as a device, through MQTT. Each
+one has its own entities, which you can put on a dashboard and use in
+automations, with no YAML.
+
+1. Install the **Mosquitto broker** add-on from the official add-on store, and
+   start it.
+2. Home Assistant offers to set up the **MQTT** integration. Accept.
+3. Restart scrobSter. The add-on log says `MQTT: connected`.
+
+The add-on gets the broker and its credentials from Home Assistant, so there is
+nothing to type. The devices appear under **Settings** > **Devices & services**
+> **MQTT**.
+
+| Device | Entities |
+|---|---|
+| **scrobSter** | **Listening**, to start and stop every room. **Shazam rate limit** and **Shazam requests (10 min)**. The two recognition rates, as numbers |
+| **scrobSter Kitchen**, one per room | **Now playing**: `Artist - Title`, or `idle`, with the album and cover as attributes. **Cover art**. **Music**, on while a song plays. **Input level** in dBFS. **Recording**. **Last error**. **Listen here**, to turn the room on and off. **Match**, an event |
+| **scrobSter sam**, one per user | **Last scrobble**. **Scrobbles today**. **Services**. A **Scrobble** switch for each room, the same as **scrobble for me** |
+
+A room's device is placed in the Home Assistant area with the room's name, so
+name your rooms after your areas. A room or user you delete disappears from
+Home Assistant too.
+
+When the add-on stops, its entities show as unavailable.
+
+### Automations
+
+**Match** fires when a room starts hearing a song: a new track, or the same one
+after `now_playing_stop_seconds` of quiet. It does not fire again while the song
+plays. Its attributes carry `artist`, `title`, `album`, `art_url`, `room` and
+`users`:
+
+```yaml
+automation:
+  - alias: Dim the kitchen for Daft Punk
+    triggers:
+      - trigger: state
+        entity_id: event.scrobster_kitchen_match
+    conditions:
+      - condition: template
+        value_template: "{{ trigger.to_state.attributes.artist == 'Daft Punk' }}"
+    actions:
+      - action: light.turn_on
+        target: {entity_id: light.kitchen}
+        data: {brightness_pct: 30}
+```
+
+To be told when a microphone goes quiet, watch its **Input level**:
+
+```yaml
+automation:
+  - alias: Warn when the kitchen hears nothing
+    triggers:
+      - trigger: numeric_state
+        entity_id: sensor.scrobster_kitchen_input_level
+        below: -80
+        for: "00:10:00"
+    actions:
+      - action: notify.persistent_notification
+        data:
+          message: The kitchen microphone has been silent for ten minutes.
+```
+
+To have a room scrobble for whoever is home, turn that person's switch on and
+off from their presence:
+
+```yaml
+automation:
+  - alias: Scrobble the kitchen for sam while sam is home
+    triggers:
+      - trigger: state
+        entity_id: person.sam
+    actions:
+      - action: >-
+          switch.turn_{{ 'on' if trigger.to_state.state == 'home' else 'off' }}
+        target: {entity_id: switch.scrobster_sam_scrobble_kitchen}
+```
+
+### Who can control it
+
+The switches and numbers act like an administrator. Anybody who can change
+entities in Home Assistant can start and stop listening, change the rates, and
+choose rooms for any user, as anybody who opens the add-on through **Open Web
+UI** already can. Camera URLs and service credentials are never published.
+
+The broker is what lets the commands in, so keep it private: the Mosquitto
+add-on only accepts Home Assistant users and add-ons.
+
+To publish nothing, turn off `mqtt_enabled`.
+
+## Use matches in a REST sensor
+
+Without MQTT, the add-on still serves a JSON status endpoint that you can read
+into a sensor.
 
 Ingress cannot be read by a sensor, so map a port first. Open the add-on
 **Network** setting, set the host port for `8000/tcp` to `8000`, and restart.

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.0
+
+- Update scrobSter to [v0.5.0](https://github.com/benkelly/scrobSter/releases/tag/v0.5.0).
+- Rooms and users appear as devices in Home Assistant, with no YAML. Each room
+  shows what it hears, its cover art, its input level and whether it records,
+  and fires a **Match** event when it starts hearing a song. Each user shows
+  their last scrobble, their scrobbles today, and a switch per room for
+  **scrobble for me**. This needs the Mosquitto broker add-on; see **Devices
+  in Home Assistant** in the documentation.
+- New option `mqtt_enabled`, on by default. Turn it off to publish nothing.
+- The REST sensor still works, and is no longer needed for a sensor per room.
+
 ## 0.4.0
 
 - Update scrobSter to [v0.4.0](https://github.com/benkelly/scrobSter/releases/tag/v0.4.0).
