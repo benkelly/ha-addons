@@ -184,6 +184,18 @@ clip. Defaults to `4`. Requests wait their turn, so adding rooms does not add
 to the rate. Raise it if Shazam rate-limits your address while several rooms
 hear music at once. **Recognition** on the **Rooms** tab outranks this option.
 
+### `skip_known_seconds`
+
+Once a room matches the same song twice in a row, it stops asking Shazam until
+that song should end, and for at most this many seconds. Defaults to `60`. The
+song's length comes from MusicBrainz, and the room asks again a few seconds
+before the end, so the next song is caught as it starts. Silence makes the room
+ask again at once.
+
+While music plays this saves most requests, so more rooms and cameras fit
+within Shazam's limit. The cost is that a song changed half-way through is
+noticed up to this many seconds late. Set `0` to ask every cycle.
+
 ### `rescrobble_minutes`
 
 Fallback only, and rarely used. It applies when a match arrives without a track

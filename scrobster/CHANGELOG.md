@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.0
+
+- Update scrobSter to [v0.6.0](https://github.com/benkelly/scrobSter/releases/tag/v0.6.0).
+- A room that keeps hearing the song it matched twice stops asking Shazam until
+  the song should end, for at most a minute. While music plays a room asks
+  about one cycle in five instead of every cycle, so more rooms and cameras fit
+  within Shazam's limit.
+- New option `skip_known_seconds`, `60` by default. `0` asks every cycle, as
+  before.
+
 ## 0.5.1
 
 - Update scrobSter to [v0.5.1](https://github.com/benkelly/scrobSter/releases/tag/v0.5.1).
