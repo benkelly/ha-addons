@@ -1,6 +1,6 @@
 ---
 name: scrobSter
-version: "0.5.1"
+version: "0.6.0"
 slug: scrobster
 description: >-
   Identify the music playing around you with Shazam and scrobble it to Last.fm,
@@ -31,6 +31,7 @@ options:
   audio_device: default
   match_interval: 15
   recognition_gap_seconds: 4
+  skip_known_seconds: 60
   chunk_seconds: 12
   rescrobble_minutes: 30
   now_playing_stop_seconds: 180
@@ -48,6 +49,8 @@ schema:
   match_interval: int(12,600)
   # Every room asks Shazam from the same address, so requests take turns.
   recognition_gap_seconds: float(1,60)
+  # While a room hears a song it matched twice, skip Shazam for up to this long.
+  skip_known_seconds: int(0,300)
   rescrobble_minutes: int(1,1440)
   now_playing_stop_seconds: int(30,3600)
   listenbrainz_token: password?
