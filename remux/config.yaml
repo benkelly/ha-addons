@@ -1,6 +1,6 @@
 ---
 name: Remux
-version: "0.37.0"
+version: "0.38.2"
 slug: remux
 description: >-
   Jellyfin compatible media server bringing Stremio add-ons, local files and
