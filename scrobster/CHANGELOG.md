@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.2
+
+- Update scrobSter to [v0.6.2](https://github.com/benkelly/scrobSter/releases/tag/v0.6.2).
+- A camera that goes offline is logged once, with a reminder every 15 minutes
+  and one line when it works again, instead of a warning every cycle. While it
+  is down the room retries more gently, up to once a minute.
+- Each room's device in Home Assistant gains a **Problem** sensor, on while the
+  room keeps failing, with `failing_since` and the reason. No option changes.
+
 ## 0.6.1
 
 - Update scrobSter to [v0.6.1](https://github.com/benkelly/scrobSter/releases/tag/v0.6.1).
