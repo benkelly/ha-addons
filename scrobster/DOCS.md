@@ -268,7 +268,7 @@ nothing to type. The devices appear under **Settings** > **Devices & services**
 | Device | Entities |
 |---|---|
 | **scrobSter** | **Listening**, to start and stop every room. **Shazam rate limit** and **Shazam requests (10 min)**. The two recognition rates, as numbers |
-| **scrobSter Kitchen**, one per room | **Now playing**: `Artist - Title`, or `idle`, with the album and cover as attributes. **Cover art**. **Music**, on while a song plays. **Input level** in dBFS. **Recording**. **Last error**. **Listen here**, to turn the room on and off. **Match**, an event |
+| **scrobSter Kitchen**, one per room | **Now playing**: `Artist - Title`, or `idle`, with the album and cover as attributes. **Cover art**. **Music**, on while a song plays. **Input level** in dBFS. **Recording**. **Problem**, on while the room keeps failing. **Last error**. **Listen here**, to turn the room on and off. **Match**, an event |
 | **scrobSter sam**, one per user | **Last scrobble**. **Scrobbles today**. **Services**. A **Scrobble** switch for each room, the same as **scrobble for me** |
 
 A room's device is placed in the Home Assistant area with the room's name, so
@@ -297,6 +297,24 @@ automation:
       - action: light.turn_on
         target: {entity_id: light.kitchen}
         data: {brightness_pct: 30}
+```
+
+To be told when a camera drops, watch its room's **Problem** sensor:
+
+```yaml
+automation:
+  - alias: Tell me when the bedroom camera is down
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.scrobster_master_bedroom_problem
+        to: "on"
+        for: "00:10:00"
+    actions:
+      - action: notify.persistent_notification
+        data:
+          message: >-
+            The bedroom camera has been failing since
+            {{ state_attr('binary_sensor.scrobster_master_bedroom_problem', 'failing_since') }}.
 ```
 
 To be told when a microphone goes quiet, watch its **Input level**:
