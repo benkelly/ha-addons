@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.7.0
+
+- Update scrobSter to [v0.7.0](https://github.com/benkelly/scrobSter/releases/tag/v0.7.0).
+- New option `quiet_dbfs`: the end of a record side counts as silence, so a
+  turntable stops asking Shazam in the run-out groove. Empty keeps today's
+  behaviour.
+- Runs on 32-bit ARM (`armv7`), such as a Raspberry Pi 3 on a 32-bit Home
+  Assistant OS.
+- Sound cards are listed by name, so a USB turntable keeps its setting after a
+  reboot.
+- A full-screen display page and a cover image for each room, for a tablet or
+  a screen by the hi-fi. See the scrobSter docs.
+
 ## 0.6.2
 
 - Update scrobSter to [v0.6.2](https://github.com/benkelly/scrobSter/releases/tag/v0.6.2).
