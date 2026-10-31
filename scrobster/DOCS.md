@@ -210,6 +210,16 @@ value makes the mark flicker while a song is still playing. ListenBrainz and
 Maloja are cleared through an API call. Last.fm has no method to clear a mark,
 so its copy disappears a few minutes later on its own.
 
+### `quiet_dbfs`
+
+Empty by default, which turns it off. A turntable keeps sending surface noise
+between tracks and in the run-out groove, and its clicks are loud enough to pass
+the silence test, so the room keeps asking Shazam after a side ends. With this
+set, a clip whose median level is below it counts as silence: the room asks
+nothing and forgets the song. Try `-50` for a turntable. The `floor_db` of each
+room in `/api/status` shows the level to compare with. Leave it empty for a
+microphone or a camera, where quiet music can sit at that level too.
+
 ### `mqtt_enabled`
 
 Publish the rooms and users as Home Assistant devices, through the Mosquitto
