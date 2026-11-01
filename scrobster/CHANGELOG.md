@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.0
+
+- Update scrobSter to [v0.7.0](https://github.com/benkelly/scrobSter/releases/tag/v0.7.0).
+
 ## 0.7.1
 
 - Update scrobSter to [v0.7.1](https://github.com/benkelly/scrobSter/releases/tag/v0.7.1).
