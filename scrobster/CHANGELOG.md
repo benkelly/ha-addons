@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.7.1
+
+- Update scrobSter to [v0.7.1](https://github.com/benkelly/scrobSter/releases/tag/v0.7.1).
+- A tablet or phone by the hi-fi can be a room's microphone as well as its
+  display. Add a room of the kind "A browser in the room", then use its
+  **Display** button.
+- Each room's **Cover art** goes unavailable when the record stops, so a
+  dashboard never keeps showing the last album. Each room also gains retained
+  `now_playing` and `playing` MQTT topics for clients outside Home Assistant.
+- The cover link's idle image is now a JPEG, so an ESPHome screen can use one
+  link for playing and idle. No option changes.
+
 ## 0.7.0
 
 - Update scrobSter to [v0.7.0](https://github.com/benkelly/scrobSter/releases/tag/v0.7.0).
