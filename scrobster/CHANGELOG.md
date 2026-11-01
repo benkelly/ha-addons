@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.2
+
+- Update scrobSter to [v0.7.2](https://github.com/benkelly/scrobSter/releases/tag/v0.7.2).
+- Covers were cut off: a cover larger than one network packet came back as
+  only its top, the rest grey, on the display page and in the cover sent to
+  Maloja. They now arrive whole. No option changes.
+
 ## 0.7.1
 
 - Update scrobSter to [v0.7.1](https://github.com/benkelly/scrobSter/releases/tag/v0.7.1).
