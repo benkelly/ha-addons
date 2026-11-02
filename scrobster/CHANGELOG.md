@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.8.1
+
+- Update scrobSter to [v0.8.1](https://github.com/benkelly/scrobSter/releases/tag/v0.8.1).
+- Fewer Shazam rate limits: recognitions go to a random device path again, as
+  they did before 0.8.0, and the pause after a limit keeps growing while it
+  lasts instead of dropping back to a minute.
+- The log and errors hide a camera URL's path, such as a UniFi Protect token,
+  so a log is safe to share.
+- A rejected Libre.fm scrobble now logs what was sent, with secrets hidden.
+- No option changes.
+
 ## 0.8.0
 
 - Update scrobSter to [v0.8.0](https://github.com/benkelly/scrobSter/releases/tag/v0.8.0).
