@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.8.0
+
+- Update scrobSter to [v0.8.0](https://github.com/benkelly/scrobSter/releases/tag/v0.8.0).
+- A lamp can match the record: each room gains a **Cover colour** sensor with
+  the cover's primary and secondary colours and a brightness hint, ready for a
+  `light.turn_on` automation. See the scrobSter Home Assistant docs.
+- Recognition now uses shazamio 0.9 and sends a 12 second window, the length the
+  Shazam apps use, which matches more songs. `chunk_seconds` above 12 is
+  accepted but only 12 seconds are sent.
+- No option changes.
+
 ## 0.7.2
 
 - Update scrobSter to [v0.7.2](https://github.com/benkelly/scrobSter/releases/tag/v0.7.2).

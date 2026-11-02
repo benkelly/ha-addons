@@ -1,6 +1,6 @@
 ---
 name: scrobSter
-version: "0.7.2"
+version: "0.8.0"
 slug: scrobster
 description: >-
   Identify the music playing around you with Shazam and scrobble it to Last.fm,
@@ -45,7 +45,7 @@ schema:
   # page, under Settings and Users.
   admin_username: str
   admin_password: password?
-  # Above 14 seconds Shazam stops matching, so the window is capped.
+  # Shazam is sent 12 seconds at most; 13 and 14 stay valid for old settings.
   chunk_seconds: int(5,14)
   match_interval: int(12,600)
   # Every room asks Shazam from the same address, so requests take turns.

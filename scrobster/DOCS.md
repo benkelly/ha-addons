@@ -165,10 +165,10 @@ on the **Rooms** tab outranks this option.
 
 ### `chunk_seconds`
 
-Seconds of audio per attempt. Defaults to `12`, and the maximum is `14`.
-
-Do not assume that more is better. Windows of 8 to 14 seconds match, but 16 and
-20 seconds fail every time, even though their signatures hold more data.
+Seconds of audio per attempt. Defaults to `12`, which is also the most Shazam
+is sent: from 0.8.0 a longer clip is fingerprinted on its middle 12 seconds,
+the window the Shazam apps use. Values of `13` and `14` are still accepted, so
+an existing setting keeps working, but they record more than is sent.
 
 ### `match_interval`
 
