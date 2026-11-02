@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.2
+
+- Update scrobSter to [v0.8.2](https://github.com/benkelly/scrobSter/releases/tag/v0.8.2).
+- Libre.fm scrobbles work: scrobSter now signs in to Libre.fm, so each scrobble
+  carries a session key. Before, every one failed with "missing a required
+  parameter".
+- No option changes.
+
 ## 0.8.1
 
 - Update scrobSter to [v0.8.1](https://github.com/benkelly/scrobSter/releases/tag/v0.8.1).
