@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.9.0
+
+- Update scrobSter to [v0.9.0](https://github.com/benkelly/scrobSter/releases/tag/v0.9.0).
+- A room can listen at its own interval: set **Listen every** in the room's
+  form on the Rooms tab. Empty follows the add-on's `match_interval`.
+- Each person chooses how often their own phone or browser microphone sends a
+  clip, under **Settings**, **Your microphone**. It also waits while Shazam is
+  limiting requests, and skips a song it already knows, as a room does.
+- A room shows how long it skips a song it knows, and the Recognition card
+  shows who used the Shazam requests.
+- The database upgrades by itself on the first start.
+- No option changes.
+
 ## 0.8.2
 
 - Update scrobSter to [v0.8.2](https://github.com/benkelly/scrobSter/releases/tag/v0.8.2).
