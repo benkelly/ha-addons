@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.38.1
+
+- Update AIOStreams to [v2.38.1](https://github.com/Viren070/AIOStreams/releases/tag/v2.38.1).
+
 ## 2.37.0
 
 - Update AIOStreams to [v2.37.0](https://github.com/Viren070/AIOStreams/releases/tag/v2.37.0).
