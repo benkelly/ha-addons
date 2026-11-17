@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.34.0
+
+- Update Dispatcharr to [v0.34.0](https://github.com/Dispatcharr/Dispatcharr/releases/tag/v0.34.0).
+
 ## 0.33.0
 
 - Update Dispatcharr to [v0.33.0](https://github.com/Dispatcharr/Dispatcharr/releases/tag/v0.33.0).
