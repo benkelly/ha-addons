@@ -1,6 +1,6 @@
 ---
 name: Tvheadend
-version: "4.3.2939"
+version: "4.3.2940"
 slug: tvheadend
 description: >-
   TV streaming server and recorder for DVB, ATSC, IPTV and SAT>IP sources.
