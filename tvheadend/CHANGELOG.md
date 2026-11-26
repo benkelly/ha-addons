@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.3.2972
+
+- Update Tvheadend to upstream commit [083bf459a7da](https://github.com/tvheadend/tvheadend/commit/083bf459a7dacbaa695d204fffdebb9827635c02).
+
 ## 4.3.2969
 
 - Update Tvheadend to upstream commit [0c42643d0f3f](https://github.com/tvheadend/tvheadend/commit/0c42643d0f3ffd973026857f5403b28029aa7184).
